@@ -10,6 +10,7 @@ import torch.nn as nn
 from models.RepVGGBlock import RepVGGBlock
 from data import mixup_data, mixup_criterion
 
+
 def seed_all(seed=1029):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -79,7 +80,6 @@ class ProgressMeter(object):
 #             res.append(correct_k.mul_(100.0 / batch_size))
 #         return res
 
-
 # @torch.no_grad()
 # def validate_model(val_loader, model, device=None, print_freq=100):
 #     if device is None:
@@ -131,16 +131,26 @@ def get_train_samples(train_loader, num_samples):
         if len(train_data) * batch[0].size(0) >= num_samples:
             break
     return torch.cat(train_data, dim=0)[:num_samples]
-    
 
-def save_checkpoint(config, epoch, model, max_accuracy, loss, optimizer, lr_scheduler, logger, is_best=False):
-    save_state = {'model': model.state_dict(),
-                  'optimizer': optimizer.state_dict(),
-                  'lr_scheduler': lr_scheduler.state_dict(),
-                  'max_accuracy': max_accuracy,
-                  'loss': loss,
-                  'epoch': epoch,
-                  'config': config}
+
+def save_checkpoint(config,
+                    epoch,
+                    model,
+                    max_accuracy,
+                    loss,
+                    optimizer,
+                    lr_scheduler,
+                    logger,
+                    is_best=False):
+    save_state = {
+        'model': model.state_dict(),
+        'optimizer': optimizer.state_dict(),
+        'lr_scheduler': lr_scheduler.state_dict(),
+        'max_accuracy': max_accuracy,
+        'loss': loss,
+        'epoch': epoch,
+        'config': config
+    }
 
     if is_best:
         best_path = os.path.join(config.output.dir, 'best_ckpt.pth')
@@ -162,11 +172,13 @@ def get_grad_norm(parameters, norm_type=2):
     total_norm = 0
     for p in parameters:
         param_norm = p.grad.data.norm(norm_type)
-        total_norm += param_norm.item() ** norm_type
-    total_norm = total_norm ** (1. / norm_type)
+        total_norm += param_norm.item()**norm_type
+    total_norm = total_norm**(1. / norm_type)
     return total_norm
 
-def finetune_one_epoch(config, model, criterion, train_loader, optimizer, epoch, lr_scheduler, logger,add_RSG,writer):
+
+def finetune_one_epoch(config, model, criterion, train_loader, optimizer,
+                       epoch, lr_scheduler, logger, add_RSG, writer):
     criterion.cuda()
     model.train()
     optimizer.zero_grad()
@@ -187,19 +199,22 @@ def finetune_one_epoch(config, model, criterion, train_loader, optimizer, epoch,
         if config.train.use_l2_norm:
             for module in model.modules():
                 if isinstance(module, RepVGGBlock):
-                    loss = loss + config.train.optimizer.weight_decay_param.decay * 0.5 * module.get_custom_L2()
+                    loss = loss + config.train.optimizer.weight_decay_param.decay * 0.5 * module.get_custom_L2(
+                    )
 
         optimizer.zero_grad()
         loss.backward()
-        writer.add_scalar('Loss/Train',loss,epoch)
-        writer.add_scalar('Lr/base',optimizer.state_dict()['param_groups'][0]['lr'],epoch)
-        writer.add_scalar('Lr/repvgg',optimizer.state_dict()['param_groups'][1]['lr'],epoch)
-        
-        
-    
+        writer.add_scalar('Loss/Train', loss, epoch)
+        writer.add_scalar('Lr/base',
+                          optimizer.state_dict()['param_groups'][0]['lr'],
+                          epoch)
+        writer.add_scalar('Lr/repvgg',
+                          optimizer.state_dict()['param_groups'][1]['lr'],
+                          epoch)
 
         if 'hs' in config.model:
-            grad_norm = nn.utils.clip_grad_norm_(model.parameters(), config.train.hs.clip_grad)
+            grad_norm = nn.utils.clip_grad_norm_(model.parameters(),
+                                                 config.train.hs.clip_grad)
         else:
             grad_norm = get_grad_norm(model.parameters())
 
@@ -224,9 +239,13 @@ def finetune_one_epoch(config, model, criterion, train_loader, optimizer, epoch,
                 f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
                 f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
-    logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
+    logger.info(
+        f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}"
+    )
 
-def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch, lr_scheduler, logger,writer):
+
+def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch,
+                    lr_scheduler, logger, writer):
     criterion.cuda()
     model.train()
     optimizer.zero_grad()
@@ -239,13 +258,12 @@ def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch, lr
     for idx, (imgs, labels) in enumerate(train_loader):
         # print(labels)
         imgs, labels = imgs.cuda(), labels.cuda()
-        
+
         outputs = model(imgs)
         # print(outputs.shape)
         # print(labels.shape)
         loss = criterion(outputs.squeeze(-1).squeeze(-1), labels)
-            
-            
+
         # if config.data.mixup.alpha > 0 and epoch < config.train.mix_up_epoch:
         #     mixed_images, labels_a, labels_b, lam = mixup_data(imgs, labels, config.data.mixup.alpha)
         #     outputs, cesc_loss, total_mv_loss, combine_target= model(mixed_images,labels, epoch, add_RSG)
@@ -257,22 +275,26 @@ def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch, lr
         # loss = criterion(outputs, combine_target) + 0.1 * cesc_loss.mean() + 0.01 * total_mv_loss.mean()
         # outputs = model(imgs)
         # loss = criterion(outputs, labels)
-        
+
         if config.train.use_l2_norm:
             for module in model.modules():
                 if isinstance(module, RepVGGBlock):
-                    loss = loss + config.train.optimizer.weight_decay_param.repvgg_decay * 0.5 * module.get_custom_L2()
+                    loss = loss + config.train.optimizer.weight_decay_param.repvgg_decay * 0.5 * module.get_custom_L2(
+                    )
 
         optimizer.zero_grad()
         loss.backward()
-        writer.add_scalar('Loss/Train',loss,epoch)
-        writer.add_scalar('Lr/base',optimizer.state_dict()['param_groups'][0]['lr'],epoch)
-        writer.add_scalar('Lr/repvgg',optimizer.state_dict()['param_groups'][1]['lr'],epoch)
-        
-    
+        writer.add_scalar('Loss/Train', loss, epoch)
+        writer.add_scalar('Lr/base',
+                          optimizer.state_dict()['param_groups'][0]['lr'],
+                          epoch)
+        writer.add_scalar('Lr/repvgg',
+                          optimizer.state_dict()['param_groups'][1]['lr'],
+                          epoch)
 
         if 'hs' in config.model:
-            grad_norm = nn.utils.clip_grad_norm_(model.parameters(), config.train.hs.clip_grad)
+            grad_norm = nn.utils.clip_grad_norm_(model.parameters(),
+                                                 config.train.hs.clip_grad)
         else:
             grad_norm = get_grad_norm(model.parameters())
 
@@ -297,20 +319,33 @@ def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch, lr
                 f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
                 f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
-    logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
+    logger.info(
+        f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}"
+    )
 
-def accuracy_per_class(output, target, topk=(1,)):
+
+def accuracy_per_class(output, target, topk=(1, )):
     """Computes the accuracy over the k top predictions for the specified values of k"""
     maxk = min(max(topk), output.size()[1])
     batch_size = target.size(0)
     _, pred = output.topk(maxk, 1, True, True)
     pred = pred.t()
     correct = pred.eq(target.reshape(1, -1).expand_as(pred))
-    return [correct[:min(k, maxk)].reshape(-1).float().sum(0) * 100. / batch_size for k in topk]
+    return [
+        correct[:min(k, maxk)].reshape(-1).float().sum(0) * 100. / batch_size
+        for k in topk
+    ]
+
+
 @torch.no_grad()
-def validate(config, val_loader, model, logger,num_classes):
+def validate(config, val_loader, model, logger, num_classes, epoch, writer):
     criterion = nn.CrossEntropyLoss()
     model.eval()
+    classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse',
+               'ship', 'truck')
+    N_CLASSES = 10
+    class_correct = list(0. for i in range(N_CLASSES))
+    class_total_1 = list(0. for i in range(N_CLASSES))
 
     batch_time = AverageMeter()
     loss_meter = AverageMeter()
@@ -318,25 +353,30 @@ def validate(config, val_loader, model, logger,num_classes):
     acc5_meter = AverageMeter()
 
     end = time.time()
-    
+
     class_total = np.zeros(num_classes)
     class_true = np.zeros(num_classes)
-    
+
     for idx, (imgs, labels) in enumerate(val_loader):
         imgs = imgs.cuda()
         labels = labels.cuda()
-
         outputs = model(imgs).squeeze(-1).squeeze(-1)
-
         loss = criterion(outputs, labels)
         acc1, acc5 = accuracy(outputs, labels, topk=(1, 5))
         for i in range(labels.size(0)):
-            class_total[int(labels[i])]+=1
-            if(int(labels[i])==int(outputs.topk(1).indices[0])):
-                class_true[int(labels[i])]+=1
+            class_total[int(labels[i])] += 1
+            if (int(labels[i]) == int(outputs.topk(1).indices[0])):
+                class_true[int(labels[i])] += 1
         loss_meter.update(loss.item(), labels.size(0))
         acc1_meter.update(acc1.item(), labels.size(0))
         acc5_meter.update(acc5.item(), labels.size(0))
+        pred = outputs.argmax(dim=1)
+        c = (pred == labels).squeeze()
+
+        for i in range(len(labels)):
+            _label = labels[i]
+            class_correct[_label] += c[i].item()
+            class_total_1[_label] += 1
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -344,14 +384,17 @@ def validate(config, val_loader, model, logger,num_classes):
 
         if idx % config.output.print_freq == 0:
             memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
-            logger.info(
-                f'Test: [{idx}/{len(val_loader)}]\t'
-                f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
-                f'Acc@1 {acc1_meter.val:.3f} ({acc1_meter.avg:.3f})\t'
-                f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
-                f'Mem {memory_used:.0f}MB')
+            logger.info(f'Test: [{idx}/{len(val_loader)}]\t'
+                        f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                        f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                        f'Acc@1 {acc1_meter.val:.3f} ({acc1_meter.avg:.3f})\t'
+                        f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
+                        f'Mem {memory_used:.0f}MB')
     logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
     logger.info(f' * per class {class_true/class_total} ')
     logger.info(class_total)
+    for i in range(N_CLASSES):
+        writer.add_scalar('class-Acc/' + classes[i],
+                          class_correct[i] / class_total_1[i], epoch)
+
     return acc1_meter.avg, acc5_meter.avg, loss_meter.avg

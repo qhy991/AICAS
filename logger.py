@@ -5,7 +5,6 @@ import functools
 from termcolor import colored
 
 
-
 @functools.lru_cache()
 def create_logger(output_dir, name=''):
     logger = logging.getLogger(name)
@@ -23,9 +22,11 @@ def create_logger(output_dir, name=''):
         logging.Formatter(fmt=color_fmt, datefmt='%Y-%m-%d %H:%M:%S'))
     logger.addHandler(console_handler)
 
-    file_handler = logging.FileHandler(os.path.join(output_dir, 'log.txt'), mode='a')
+    file_handler = logging.FileHandler(os.path.join(output_dir, 'log.txt'),
+                                       mode='a')
     file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt='%Y-%m-%d %H:%M:%S'))
+    file_handler.setFormatter(
+        logging.Formatter(fmt=fmt, datefmt='%Y-%m-%d %H:%M:%S'))
     logger.addHandler(file_handler)
 
     return logger

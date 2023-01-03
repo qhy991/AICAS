@@ -25,14 +25,20 @@ class BCELoss(_Loss):
 
 
 class SoftmaxEQLLoss(_Loss):
-    def __init__(self, num_classes, indicator='pos', loss_weight=1.0, tau=1.0, eps=1e-4):
+    def __init__(self,
+                 num_classes,
+                 indicator='pos',
+                 loss_weight=1.0,
+                 tau=1.0,
+                 eps=1e-4):
         super(SoftmaxEQLLoss, self).__init__()
         self.loss_weight = loss_weight
         self.num_classes = num_classes
         self.tau = tau
         self.eps = eps
 
-        assert indicator in ['pos', 'neg', 'pos_and_neg'], 'Wrong indicator type!'
+        assert indicator in ['pos', 'neg',
+                             'pos_and_neg'], 'Wrong indicator type!'
         self.indicator = indicator
 
         # initial variables
@@ -53,7 +59,8 @@ class SoftmaxEQLLoss(_Loss):
         one_hot = F.one_hot(label, self.num_classes)
         self.targets = one_hot.detach()
 
-        matrix = indicator[None, :].clamp(min=self.eps) / indicator[:, None].clamp(min=self.eps)
+        matrix = indicator[None, :].clamp(
+            min=self.eps) / indicator[:, None].clamp(min=self.eps)
         factor = matrix[label.long(), :].pow(self.tau)
 
         cls_score = input + (factor.log() * (1 - one_hot.detach()))
@@ -63,10 +70,13 @@ class SoftmaxEQLLoss(_Loss):
         return loss * self.loss_weight
 
 # <<<<<<< HEAD
+
     def collect_grad(self, grad):
         grad = torch.abs(grad)
         pos_grad = torch.sum(grad * self.targets, dim=0)
         neg_grad = torch.sum(grad * (1 - self.targets), dim=0)
+
+
 # =======
 import torch
 import torch.nn as nn
@@ -75,19 +85,19 @@ import torch.distributed as dist
 from functools import partial
 
 
-
 class EQLv2(nn.Module):
-    def __init__(self,
-                 use_sigmoid=True,
-                 reduction='mean',
-                 class_weight=None,
-                 loss_weight=1.0,
-                 num_classes=88,  # 1203 for lvis v1.0, 1230 for lvis v0.5
-                 gamma=12,
-                 mu=0.8,
-                 alpha=4.0,
-                 vis_grad=False,
-                 test_with_obj=True):
+    def __init__(
+            self,
+            use_sigmoid=True,
+            reduction='mean',
+            class_weight=None,
+            loss_weight=1.0,
+            num_classes=88,  # 1203 for lvis v1.0, 1230 for lvis v0.5
+            gamma=12,
+            mu=0.8,
+            alpha=4.0,
+            vis_grad=False,
+            test_with_obj=True):
         super().__init__()
         self.use_sigmoid = True
         self.reduction = reduction
@@ -113,6 +123,7 @@ class EQLv2(nn.Module):
 
         def _func(x, gamma, mu):
             return 1 / (1 + torch.exp(-gamma * (x - mu)))
+
         self.map_func = partial(_func, gamma=self.gamma, mu=self.mu)
         # logger = get_root_logger()
         print(f"build EQL v2, gamma: {gamma}, mu: {mu}, alpha: {alpha}")
@@ -140,7 +151,8 @@ class EQLv2(nn.Module):
 
         weight = pos_w * target + neg_w * (1 - target)
 
-        cls_loss = F.binary_cross_entropy_with_logits(cls_score, target,
+        cls_loss = F.binary_cross_entropy_with_logits(cls_score,
+                                                      target,
                                                       reduction='none')
         cls_loss = torch.sum(cls_loss * weight) / self.n_i
 
@@ -171,7 +183,7 @@ class EQLv2(nn.Module):
 
         dist.all_reduce(pos_grad)
         dist.all_reduce(neg_grad)
-# >>>>>>> bd3bee7309cad09bd8bfc7a79d531e33e9e7a08e
+        # >>>>>>> bd3bee7309cad09bd8bfc7a79d531e33e9e7a08e
 
         self.pos_grad += pos_grad
         self.neg_grad += neg_grad
@@ -179,37 +191,43 @@ class EQLv2(nn.Module):
 
 # <<<<<<< HEAD
 # =======
+
     def get_weight(self, cls_score):
         neg_w = torch.cat([self.map_func(self.pos_neg), cls_score.new_ones(1)])
         pos_w = 1 + self.alpha * (1 - neg_w)
         neg_w = neg_w.view(1, -1).expand(self.n_i, self.n_c)
         pos_w = pos_w.view(1, -1).expand(self.n_i, self.n_c)
         return pos_w, neg_w
+
+
 # >>>>>>> bd3bee7309cad09bd8bfc7a79d531e33e9e7a08e
 import numpy as np
+
+
 class LDAMLoss(nn.Module):
-    
     def __init__(self, cls_num_list, max_m=0.5, weight=None, s=30):
         super(LDAMLoss, self).__init__()
-        m_list = 1.0 / np.sqrt(np.sqrt(cls_num_list)) # nj的四次开方
-        m_list = m_list * (max_m / np.max(m_list)) # 常系数 C
-        m_list = torch.cuda.FloatTensor(m_list) # 转成 tensor
+        m_list = 1.0 / np.sqrt(np.sqrt(cls_num_list))  # nj的四次开方
+        m_list = m_list * (max_m / np.max(m_list))  # 常系数 C
+        m_list = torch.cuda.FloatTensor(m_list)  # 转成 tensor
         self.m_list = m_list
         assert s > 0
-        self.s = s # 这个参数的作用论文里提过么？
-        self.weight = weight # 和频率相关的 re-weight
+        self.s = s  # 这个参数的作用论文里提过么？
+        self.weight = weight  # 和频率相关的 re-weight
 
     def forward(self, x, target):
-        index = torch.zeros_like(x, dtype=torch.uint8) # 和 x 维度一致全 0 的tensor
-        index.scatter_(1, target.data.view(-1, 1), 1) # dim idx input
-        index_float = index.type(torch.cuda.FloatTensor) # 转 tensor
+        index = torch.zeros_like(x, dtype=torch.uint8)  # 和 x 维度一致全 0 的tensor
+        index.scatter_(1, target.data.view(-1, 1), 1)  # dim idx input
+        index_float = index.type(torch.cuda.FloatTensor)  # 转 tensor
         ''' 以上的idx指示的应该是一个batch的y_true '''
-        batch_m = torch.matmul(self.m_list[None, :], index_float.transpose(0,1))
+        batch_m = torch.matmul(self.m_list[None, :],
+                               index_float.transpose(0, 1))
         batch_m = batch_m.view((-1, 1))
-        x_m = x - batch_m # y 的 logit 减去 margin
-        output = torch.where(index, x_m, x) # 按照修改位置合并
-        return F.cross_entropy(self.s*output, target, weight=self.weight)
-    
+        x_m = x - batch_m  # y 的 logit 减去 margin
+        output = torch.where(index, x_m, x)  # 按照修改位置合并
+        return F.cross_entropy(self.s * output, target, weight=self.weight)
+
+
 """Copyright (c) Facebook, Inc. and its affiliates.
 All rights reserved.
 
@@ -223,7 +241,6 @@ this source tree.
 Copyright (c) 2019, Zhongqi Miao
 All rights reserved.
 """
-
 
 import torch
 from torch.nn.modules.loss import _Loss
@@ -239,12 +256,21 @@ class BalancedSoftmax(_Loss):
         super(BalancedSoftmax, self).__init__()
         # with open(freq_path, 'r') as fd:
         #     freq = json.load(fd)
-        freq = [229, 291, 372, 447, 825, 113, 1170, 444, 940, 271, 582, 322, 421, 298, 227, 35, 180, 184, 410, 189, 249, 153, 191, 307, 310, 301, 73, 78, 110, 78, 250, 76, 135, 102, 87, 73, 118, 111, 377, 219, 165, 324, 257, 1725, 658, 23, 82, 458, 325, 145, 480, 502, 108, 259, 601, 234, 16, 269, 108, 2102, 304, 588, 1335, 1360, 385, 363, 162, 293, 13, 16, 3069, 1152, 1189, 1184, 1186, 2592, 29, 172, 169, 171, 1274, 8, 2346, 2345, 2344, 5121, 34, 460, 150]
+        freq = [
+            229, 291, 372, 447, 825, 113, 1170, 444, 940, 271, 582, 322, 421,
+            298, 227, 35, 180, 184, 410, 189, 249, 153, 191, 307, 310, 301, 73,
+            78, 110, 78, 250, 76, 135, 102, 87, 73, 118, 111, 377, 219, 165,
+            324, 257, 1725, 658, 23, 82, 458, 325, 145, 480, 502, 108, 259,
+            601, 234, 16, 269, 108, 2102, 304, 588, 1335, 1360, 385, 363, 162,
+            293, 13, 16, 3069, 1152, 1189, 1184, 1186, 2592, 29, 172, 169, 171,
+            1274, 8, 2346, 2345, 2344, 5121, 34, 460, 150
+        ]
         freq = torch.tensor(freq)
         self.sample_per_class = freq
 
     def forward(self, input, label, reduction='mean'):
-        return balanced_softmax_loss(label, input, self.sample_per_class, reduction)
+        return balanced_softmax_loss(label, input, self.sample_per_class,
+                                     reduction)
 
 
 def balanced_softmax_loss(labels, logits, sample_per_class, reduction):

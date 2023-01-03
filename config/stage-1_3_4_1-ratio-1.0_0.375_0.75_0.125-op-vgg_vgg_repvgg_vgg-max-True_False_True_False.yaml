@@ -44,7 +44,7 @@ train:
     min_lr: 1.0e-05
   no_weight_decay: rbr_dense
   optimizer:
-    base_lr: 0.1
+    base_lr: 0.05
     betas:
     - 0.9
     - 0.999
@@ -58,8 +58,8 @@ train:
       repvgg_decay: 0.05
   start_epoch: 0
   use_l2_norm: true
-  warmup_epochs: 20
-  warmup_lr: 0.001
+  warmup_epochs: 10
+  warmup_lr: 0.01
   workers: 8
 val:
   batch_size: 128

@@ -28,14 +28,26 @@ class LAMB(Optimizer):
         >>> loss_fn(model(input), target).backward()
         >>> optimizer.step()
     """
-
-    def __init__(
-            self, params, lr=1e-3, bias_correction=True, betas=(0.9, 0.999), eps=1e-6,
-            weight_decay=0.01, grad_averaging=True, max_grad_norm=1.0, trust_clip=False, always_adapt=False):
-        defaults = dict(
-            lr=lr, bias_correction=bias_correction, betas=betas, eps=eps, weight_decay=weight_decay,
-            grad_averaging=grad_averaging, max_grad_norm=max_grad_norm,
-            trust_clip=trust_clip, always_adapt=always_adapt)
+    def __init__(self,
+                 params,
+                 lr=1e-3,
+                 bias_correction=True,
+                 betas=(0.9, 0.999),
+                 eps=1e-6,
+                 weight_decay=0.01,
+                 grad_averaging=True,
+                 max_grad_norm=1.0,
+                 trust_clip=False,
+                 always_adapt=False):
+        defaults = dict(lr=lr,
+                        bias_correction=bias_correction,
+                        betas=betas,
+                        eps=eps,
+                        weight_decay=weight_decay,
+                        grad_averaging=grad_averaging,
+                        max_grad_norm=max_grad_norm,
+                        trust_clip=trust_clip,
+                        always_adapt=always_adapt)
         super().__init__(params, defaults)
 
     @torch.no_grad()
@@ -51,7 +63,9 @@ class LAMB(Optimizer):
                 loss = closure()
 
         device = self.param_groups[0]['params'][0].device
-        one_tensor = torch.tensor(1.0, device=device)  # because torch.where doesn't handle scalars correctly
+        one_tensor = torch.tensor(
+            1.0, device=device
+        )  # because torch.where doesn't handle scalars correctly
         global_grad_norm = torch.zeros(1, device=device)
         for group in self.param_groups:
             for p in group['params']:
@@ -59,17 +73,19 @@ class LAMB(Optimizer):
                     continue
                 grad = p.grad
                 if grad.is_sparse:
-                    raise RuntimeError('Lamb does not support sparse gradients, consider SparseAdam instad.')
+                    raise RuntimeError(
+                        'Lamb does not support sparse gradients, consider SparseAdam instad.'
+                    )
                 global_grad_norm.add_(grad.pow(2).sum())
 
         global_grad_norm = torch.sqrt(global_grad_norm)
         # FIXME it'd be nice to remove explicit tensor conversion of scalars when torch.where promotes
         # scalar types properly https://github.com/pytorch/pytorch/issues/9190
-        max_grad_norm = torch.tensor(self.defaults['max_grad_norm'], device=device)
-        clip_global_grad_norm = torch.where(
-            global_grad_norm > max_grad_norm,
-            global_grad_norm / max_grad_norm,
-            one_tensor)
+        max_grad_norm = torch.tensor(self.defaults['max_grad_norm'],
+                                     device=device)
+        clip_global_grad_norm = torch.where(global_grad_norm > max_grad_norm,
+                                            global_grad_norm / max_grad_norm,
+                                            one_tensor)
 
         for group in self.param_groups:
             bias_correction = 1 if group['bias_correction'] else 0
@@ -85,8 +101,8 @@ class LAMB(Optimizer):
                 group['step'] = 1
 
             if bias_correction:
-                bias_correction1 = 1 - beta1 ** group['step']
-                bias_correction2 = 1 - beta2 ** group['step']
+                bias_correction1 = 1 - beta1**group['step']
+                bias_correction2 = 1 - beta2**group['step']
             else:
                 bias_correction1, bias_correction2 = 1.0, 1.0
 
@@ -107,9 +123,11 @@ class LAMB(Optimizer):
 
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(beta1).add_(grad, alpha=beta3)  # m_t
-                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)  # v_t
+                exp_avg_sq.mul_(beta2).addcmul_(grad, grad,
+                                                value=1 - beta2)  # v_t
 
-                denom = (exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(group['eps'])
+                denom = (exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(
+                    group['eps'])
                 update = (exp_avg / bias_correction1).div_(denom)
 
                 weight_decay = group['weight_decay']
@@ -146,37 +164,74 @@ def build_optimizer(config, model):
         skip = model.no_weight_decay()
     if hasattr(model, 'no_weight_decay_keywords'):
         if config.train.use_l2_norm:
-            skip_keywords = model.no_weight_decay_keywords(config.train.no_weight_decay)
+            skip_keywords = model.no_weight_decay_keywords(
+                config.train.no_weight_decay)
         else:
             skip_keywords = model.no_weight_decay_keywords()
-    parameters = set_weight_decay(model, skip, skip_keywords, echo=config.train.optimizer.weight_decay_param.echo)
+    parameters = set_weight_decay(
+        model,
+        skip,
+        skip_keywords,
+        echo=config.train.optimizer.weight_decay_param.echo)
     repvgg_stage = torch.nn.ModuleList()
-    for stage in (model.stage_0,model.stage_1,model.stage_2,model.stage_3):
+    for stage in (model.stage_0, model.stage_1, model.stage_2, model.stage_3):
         for name, module in stage._modules.items():
             if "repvgg" in name:
                 repvgg_stage.append(stage)
-    repvgg_stage_params = list(map(id,repvgg_stage.parameters()))
-    base_stage_param = filter(lambda p:id(p) not in repvgg_stage_params,model.parameters())
-    
+    repvgg_stage_params = list(map(id, repvgg_stage.parameters()))
+    base_stage_param = filter(lambda p: id(p) not in repvgg_stage_params,
+                              model.parameters())
+
     opt_lower = config.train.optimizer.name.lower()
     optimizer = None
     if opt_lower == 'sgd':
-        optimizer = optim.SGD([{'params':base_stage_param,'lr':config.train.optimizer.base_lr,"weight_decay":config.train.optimizer.weight_decay_param.base_decay},
-                             {'params':repvgg_stage.parameters(),'lr':config.train.optimizer.repvgg_lr,"weight_decay":config.train.optimizer.weight_decay_param.repvgg_decay}],
-                              momentum=config.train.optimizer.momentum, nesterov=True,)
+        optimizer = optim.SGD(
+            [{
+                'params':
+                base_stage_param,
+                'lr':
+                config.train.optimizer.base_lr,
+                "weight_decay":
+                config.train.optimizer.weight_decay_param.base_decay
+            }, {
+                'params':
+                repvgg_stage.parameters(),
+                'lr':
+                config.train.optimizer.repvgg_lr,
+                "weight_decay":
+                config.train.optimizer.weight_decay_param.repvgg_decay
+            }],
+            momentum=config.train.optimizer.momentum,
+            nesterov=True,
+        )
         # optimizer = optim.SGD(parameters, momentum=config.train.optimizer.momentum, nesterov=True,
         #                       lr=config.train.optimizer.base_lr, weight_decay=config.train.optimizer.weight_decay_param.decay)
         if config.train.optimizer.weight_decay_param.echo:
-            print('================================== SGD nest, momentum = {}, wd = {}'.format(config.train.optimizer.momentum, config.train.optimizer.weight_decay_param.decay))
+            print(
+                '================================== SGD nest, momentum = {}, wd = {}'
+                .format(config.train.optimizer.momentum,
+                        config.train.optimizer.weight_decay_param.decay))
     elif opt_lower == 'adam':
         print('adam')
-        optimizer = optim.Adam(parameters, eps=config.train.optimizer.eps, betas=config.train.optimizer.betas,
-                                lr=config.train.optimizer.base_lr, weight_decay=config.train.optimizer.weight_decay_param.decay)
+        optimizer = optim.Adam(
+            parameters,
+            eps=config.train.optimizer.eps,
+            betas=config.train.optimizer.betas,
+            lr=config.train.optimizer.base_lr,
+            weight_decay=config.train.optimizer.weight_decay_param.decay)
     elif opt_lower == 'adamw':
-        optimizer = optim.AdamW(parameters, eps=config.train.optimizer.eps, betas=config.train.optimizer.betas,
-                                lr=config.train.optimizer.base_lr, weight_decay=config.train.optimizer.weight_decay_param.decay)
+        optimizer = optim.AdamW(
+            parameters,
+            eps=config.train.optimizer.eps,
+            betas=config.train.optimizer.betas,
+            lr=config.train.optimizer.base_lr,
+            weight_decay=config.train.optimizer.weight_decay_param.decay)
     elif opt_lower == 'lamb':
-        optimizer = LAMB(parameters, lr=config.train.optimizer.base_lr, betas=config.train.optimizer.betas, weight_decay=config.train.optimizer.weight_decay_param.decay)
+        optimizer = LAMB(
+            parameters,
+            lr=config.train.optimizer.base_lr,
+            betas=config.train.optimizer.betas,
+            weight_decay=config.train.optimizer.weight_decay_param.decay)
 
     return optimizer
 
@@ -192,7 +247,9 @@ def set_weight_decay(model, skip_list=(), skip_keywords=(), echo=False):
             has_decay.append(param)
             if echo:
                 print(f"{name} USE weight decay")
-        elif len(param.shape) == 1 or name.endswith(".bias") or (name in skip_list) or check_keywords_in_name(name, skip_keywords):
+        elif len(param.shape) == 1 or name.endswith(".bias") or (
+                name in skip_list) or check_keywords_in_name(
+                    name, skip_keywords):
             no_decay.append(param)
             if echo:
                 print(f"{name} has no weight decay")
@@ -201,8 +258,7 @@ def set_weight_decay(model, skip_list=(), skip_keywords=(), echo=False):
             if echo:
                 print(f"{name} USE weight decay")
 
-    return [{'params': has_decay},
-            {'params': no_decay, 'weight_decay': 0.}]
+    return [{'params': has_decay}, {'params': no_decay, 'weight_decay': 0.}]
 
 
 def check_keywords_in_name(name, keywords=()):
