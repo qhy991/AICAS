@@ -25,7 +25,7 @@ import copy
 
 parser = argparse.ArgumentParser(description="Train mix-VGG for AICAS2023")
 parser.add_argument("--config", required=True)
-parser.add_argument("--dataset", required=True)
+parser.add_argument("--dataset", default="cifar10",required=False)
 args = parser.parse_args()
 
 config = EasyDict(yaml.full_load(open(args.config)))
@@ -61,36 +61,48 @@ def main(config, dataset):
     cifar10_data_dir = '~/data/pytorch_cifar10'
     cifar100_data_dir = '~/data/pytorch_cifar100'
     # load dataset
-    if args.dataset == "cifar10":
-        transforms_normalize = transforms.Normalize(
-            mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
-        transform_list = [transforms.ToTensor(), transforms_normalize]
-        transformer = transforms.Compose(transform_list)
-    else:
-        pass
+    # if args.dataset == "cifar10":
+    #     transforms_normalize = transforms.Normalize(
+    #         mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
+    #     transform_list = [transforms.ToTensor(), transforms_normalize]
+    #     transformer = transforms.Compose(transform_list)
+    # else:
+    #     pass
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
+
+    transform_test = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
 
     if args.dataset == 'cifar10':
         num_classes = 10
         train_dataset = datasets.CIFAR10(root=cifar10_data_dir,
                                          train=True,
                                          download=True,
-                                         transform=transformer)
+                                         transform=transform_train)
         val_dataset = datasets.CIFAR10(root=cifar10_data_dir,
                                        train=False,
                                        download=True,
-                                       transform=transformer)
+                                       transform=transform_test)
     elif args.dataset == 'cifar100':
         num_classes = 100
         train_dataset = datasets.CIFAR100(root=cifar100_data_dir,
                                           train=False,
                                           download=True,
-                                          transform=transformer)
+                                          transform=transform_train)
         val_dataset = datasets.CIFAR100(root=cifar100_data_dir,
                                         train=False,
                                         download=True,
-                                        transform=transformer)
+                                        transform=transform_test)
     else:
         raise ValueError('Unknown dataset_name=' + args.dataset)
+    
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=config.train.batch_size,
