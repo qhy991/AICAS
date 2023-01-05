@@ -8,6 +8,19 @@ python3 train --config ./config/**.yaml --dataset cifar10
 ## Activation
 pass
 ## The result of trainning
+### NO.50-NO.149
+The 100 models are mixed with repvgg and vgg, and the weight decay is 1e-4 and 5e-4 respectively.
+
+![](./analysis/pic/50-150.png) 
+### NO.150-NO.199
+NO.150-NO.180 every op is vgg
+
+NO.180-NO.200 every op is repvgg
+
+And NO.180-NO.189 weight decay is 1e-4, NO.190-N0.199 weight decay is 4e-5
+
+![](./analysis/pic/150-200.png) 
+
 |NO.|layer|ratio|op|max|flops|Acc|
 |-|-|-|-|-|-|-|
 |rep|2-2-2-2|0.5-0.5-0.5-0.5|repvgg-repvgg-repvgg-repvgg|False-False-False-False||85.45%|
