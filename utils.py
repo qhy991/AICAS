@@ -391,7 +391,7 @@ def validate(config, val_loader, model, logger, num_classes, epoch, writer):
                         f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
                         f'Mem {memory_used:.0f}MB')
     logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
-    logger.info(f' * per class {class_true/class_total} ')
+    logger.info(f' * per class {np.array(class_correct)/np.array(class_total_1)} ')
     logger.info(class_total)
     for i in range(N_CLASSES):
         writer.add_scalar('class-Acc/' + classes[i],

@@ -19,6 +19,7 @@ def VGGBlock(in_channels,
     conv2d = nn.Conv2d(in_channels,
                        out_channels,
                        kernel_size=kernel_size,
+                       stride = stride,
                        padding=1,
                        dilation=1,
                        groups=1,
@@ -33,6 +34,10 @@ def make_layer(stage_num, layer_num, channel_num_in, channel_num_out, op_type,
                with_maxpool):
     channel_nums_in = [channel_num_in] + [channel_num_out] * (layer_num - 1)
     layers = []
+    # if stage_num == 0 and op_type == "vgg":
+    #     first_layer_stride = 1
+    # else:
+    #     first_layer_stride = 2
     if with_maxpool == True:
         layers.append(("maxpool", nn.MaxPool2d(2, 2)))
         if op_type == 'vgg':
@@ -88,48 +93,53 @@ class Net(nn.Module):
     def __init__(self, config, num_classes):
         super(Net, self).__init__()
         self.stage_0 = make_layer(
-            0, 1, 3,
+            0, config["model"]["stage_layer"][0], 3,
             int(config["model"]["layer_num_max"][0] *
                 config["model"]["stage_ratio"][0]),
             config["model"]["op_type"][0], config["model"]["with_maxpool"][0])
         self.stage_1 = make_layer(
-            1, config["model"]["stage_layer"][0],
-            int(config["model"]["layer_num_max"][0] *
-                config["model"]["stage_ratio"][0]),
-            int(config["model"]["layer_num_max"][0] *
-                config["model"]["stage_ratio"][0]),
-            config["model"]["op_type"][1], config["model"]["with_maxpool"][0])
-        self.stage_2 = make_layer(
-            2, config["model"]["stage_layer"][1],
+            1, config["model"]["stage_layer"][1],
             int(config["model"]["layer_num_max"][0] *
                 config["model"]["stage_ratio"][0]),
             int(config["model"]["layer_num_max"][1] *
                 config["model"]["stage_ratio"][1]),
-            config["model"]["op_type"][2], config["model"]["with_maxpool"][1])
-        self.stage_3 = make_layer(
-            3, config["model"]["stage_layer"][2],
+            config["model"]["op_type"][1], config["model"]["with_maxpool"][1])
+        self.stage_2 = make_layer(
+            2, config["model"]["stage_layer"][2],
             int(config["model"]["layer_num_max"][1] *
                 config["model"]["stage_ratio"][1]),
             int(config["model"]["layer_num_max"][2] *
                 config["model"]["stage_ratio"][2]),
-            config["model"]["op_type"][3], config["model"]["with_maxpool"][2])
-        self.stage_4 = make_layer(
-            4, config["model"]["stage_layer"][3],
+            config["model"]["op_type"][2], config["model"]["with_maxpool"][2])
+        self.stage_3 = make_layer(
+            3, config["model"]["stage_layer"][3],
             int(config["model"]["layer_num_max"][2] *
                 config["model"]["stage_ratio"][2]),
             int(config["model"]["layer_num_max"][3] *
                 config["model"]["stage_ratio"][3]),
-            config["model"]["op_type"][4], config["model"]["with_maxpool"][3])
+            config["model"]["op_type"][3], config["model"]["with_maxpool"][3])
+        self.stage_4 = make_layer(
+            4, config["model"]["stage_layer"][4],
+            int(config["model"]["layer_num_max"][3] *
+                config["model"]["stage_ratio"][3]),
+            int(config["model"]["layer_num_max"][4] *
+                config["model"]["stage_ratio"][4]),
+            config["model"]["op_type"][4], config["model"]["with_maxpool"][4])
+        self.maxpool = nn.MaxPool2d(2,2)
         self.gap = nn.AdaptiveAvgPool2d(output_size=1)
         self.linear = nn.Linear(
-            int(config["model"]["layer_num_max"][3] *
-                config["model"]["stage_ratio"][3]), num_classes)
+            int(config["model"]["layer_num_max"][4] *
+                config["model"]["stage_ratio"][4]), num_classes)
 
     def forward(self, input):
         out = self.stage_0(input)
+        num = 1
         for stage in (self.stage_1, self.stage_2, self.stage_3, self.stage_4):
             for block in stage:
                 out = block(out)
+        # print(out.shape)
+        # out = self.maxpool(out)
         out = self.gap(out)
         out = self.linear(out.view(out.size(0), -1))
+        
         return out
