@@ -341,11 +341,19 @@ def accuracy_per_class(output, target, topk=(1, )):
 def validate(config, val_loader, model, logger, num_classes, epoch, writer):
     criterion = nn.CrossEntropyLoss()
     model.eval()
-    classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse',
+    if num_classes ==10 :
+        classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse',
                'ship', 'truck')
-    N_CLASSES = 10
-    class_correct = list(0. for i in range(N_CLASSES))
-    class_total_1 = list(0. for i in range(N_CLASSES))
+    else :
+        classes = {19: 'cattle', 29: 'dinosaur', 0: 'apple', 11: 'boy', 1: 'aquarium_fish', 86: 'telephone', 90: 'train', 28: 'cup', 23: 'cloud', 31: 'elephant', 39: 'keyboard', 96: 'willow_tree', 82: 'sunflower', 17: 'castle', 71: 'sea', 8: 'bicycle', 97: 'wolf', 80: 'squirrel', 74: 'shrew', 59: 'pine_tree', 70: 'rose', 87: 'television', 
+         84: 'table', 64: 'possum', 52: 'oak_tree', 42: 'leopard', 47: 'maple_tree', 65: 'rabbit', 21: 'chimpanzee', 22: 'clock', 81: 'streetcar', 24: 'cockroach', 78: 'snake', 45: 'lobster', 49: 'mountain', 56: 'palm_tree', 76: 'skyscraper', 89: 'tractor', 73: 'shark', 14: 'butterfly', 9: 'bottle', 6: 'bee', 20: 'chair', 98: 'woman', 
+         36: 'hamster', 55: 'otter', 72: 'seal', 43: 'lion', 51: 'mushroom', 35: 'girl', 83: 'sweet_pepper', 33: 'forest', 27: 'crocodile', 53: 'orange', 92: 'tulip', 50: 'mouse', 15: 'camel', 18: 'caterpillar', 46: 'man', 75: 'skunk', 38: 'kangaroo', 66: 'raccoon', 77: 'snail', 69: 'rocket', 95: 'whale', 99: 'worm', 93: 'turtle',
+         4: 'beaver', 61: 'plate', 94: 'wardrobe', 68: 'road', 34: 'fox', 32: 'flatfish', 88: 'tiger', 67: 'ray', 30: 'dolphin', 62: 'poppy', 63: 'porcupine', 40: 'lamp', 26: 'crab', 48: 'motorcycle', 79: 'spider', 85: 'tank', 54: 'orchid', 44: 'lizard', 7: 'beetle', 12: 'bridge', 2: 'baby', 41: 'lawn_mower', 37: 'house', 13: 'bus', 
+         25: 'couch', 10: 'bowl', 57: 'pear', 5: 'bed', 60: 'plain', 91: 'trout', 3: 'bear', 58: 'pickup_truck', 16: 'can'}
+
+    # N_CLASSES = 10
+    class_correct = list(0. for i in range(num_classes))
+    class_total_1 = list(0. for i in range(num_classes))
 
     batch_time = AverageMeter()
     loss_meter = AverageMeter()
@@ -393,8 +401,9 @@ def validate(config, val_loader, model, logger, num_classes, epoch, writer):
     logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
     logger.info(f' * per class {np.array(class_correct)/np.array(class_total_1)} ')
     logger.info(class_total)
-    for i in range(N_CLASSES):
-        writer.add_scalar('class-Acc/' + classes[i],
-                          class_correct[i] / class_total_1[i], epoch)
+    if num_classes == 10:
+        for i in range(num_classes):
+            writer.add_scalar('class-Acc/' + classes[i],
+                            class_correct[i] / class_total_1[i], epoch)
 
     return acc1_meter.avg, acc5_meter.avg, loss_meter.avg

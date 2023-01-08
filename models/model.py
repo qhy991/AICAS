@@ -34,10 +34,10 @@ def make_layer(stage_num, layer_num, channel_num_in, channel_num_out, op_type,
                with_maxpool):
     channel_nums_in = [channel_num_in] + [channel_num_out] * (layer_num - 1)
     layers = []
-    # if stage_num == 0 and op_type == "vgg":
-    #     first_layer_stride = 1
-    # else:
-    #     first_layer_stride = 2
+    if stage_num == 0 :
+        first_layer_stride = 1
+    else:
+        first_layer_stride = 2
     if with_maxpool == True:
         layers.append(("maxpool", nn.MaxPool2d(2, 2)))
         if op_type == 'vgg':
@@ -69,7 +69,7 @@ def make_layer(stage_num, layer_num, channel_num_in, channel_num_out, op_type,
                            VGGBlock(channel_num_in,
                                     channel_num_out,
                                     kernel_size=3,
-                                    stride=2)))
+                                    stride=first_layer_stride)))
             layers += [("stage_{}_{}_vgg".format(stage_num, i),
                         VGGBlock(channel_num_out, channel_num_out, 3))
                        for i in range(1, layer_num)]
@@ -79,7 +79,7 @@ def make_layer(stage_num, layer_num, channel_num_in, channel_num_out, op_type,
                                        channel_num_out,
                                        kernel_size=3,
                                        padding=1,
-                                       stride=2)))
+                                       stride=first_layer_stride)))
             layers += [("stage_{}_{}_repvgg".format(stage_num, i),
                         RepVGGBlock(channel_num_out,
                                     channel_num_out,
@@ -127,10 +127,13 @@ class Net(nn.Module):
             config["model"]["op_type"][4], config["model"]["with_maxpool"][4])
         self.maxpool = nn.MaxPool2d(2,2)
         self.gap = nn.AdaptiveAvgPool2d(output_size=1)
+        # self.linear = nn.Linear(
+        #     int(config["model"]["layer_num_max"][4] *
+        #         config["model"]["stage_ratio"][4]), int(config["model"]["layer_num_max"][4] *
+        #         config["model"]["stage_ratio"][4]))
         self.linear = nn.Linear(
             int(config["model"]["layer_num_max"][4] *
                 config["model"]["stage_ratio"][4]), num_classes)
-
     def forward(self, input):
         out = self.stage_0(input)
         num = 1
@@ -141,5 +144,7 @@ class Net(nn.Module):
         # out = self.maxpool(out)
         out = self.gap(out)
         out = self.linear(out.view(out.size(0), -1))
+        # out = self.linear2(out)
+        
         
         return out

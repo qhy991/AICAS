@@ -68,19 +68,35 @@ def main(config, dataset):
     #     transformer = transforms.Compose(transform_list)
     # else:
     #     pass
-    transform_train = transforms.Compose([
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    ])
+    if config.dataset== "cifar10":
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
 
-    transform_test = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    ])
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
+    else :
+        mean = [0.5070751592371323, 0.48654887331495095, 0.4409178433670343]
+        std = [0.2673342858792401, 0.2564384629170883, 0.27615047132568404]
+        transform_train = transforms.Compose([
+            #transforms.ToPILImage(),
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
 
-    if args.dataset == 'cifar10':
+    if config.dataset == 'cifar10':
         num_classes = 10
         train_dataset = datasets.CIFAR10(root=cifar10_data_dir,
                                          train=True,
@@ -90,10 +106,10 @@ def main(config, dataset):
                                        train=False,
                                        download=True,
                                        transform=transform_test)
-    elif args.dataset == 'cifar100':
+    elif config.dataset == 'cifar100':
         num_classes = 100
         train_dataset = datasets.CIFAR100(root=cifar100_data_dir,
-                                          train=False,
+                                          train=True,
                                           download=True,
                                           transform=transform_train)
         val_dataset = datasets.CIFAR100(root=cifar100_data_dir,
