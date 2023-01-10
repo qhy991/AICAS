@@ -15,8 +15,10 @@ pass
 |vgg13| 229.26M | 9.41M | 93.24|
 |vgg16| 314.31M | 14.72M | 92.52|
 |vgg19| 399.35M | 20.04M | 92.93|
-|repvgg-A0| 460.09M | 26.30M | 91.94|
-|repvgg-A1| 807.43M | 44.55M | 92.36|
+|repvgg-A0(lr=0.1)| 460.09M | 26.30M | 91.94|
+|repvgg-A0(lr=0.01)| 460.09M | 26.30M | 90.51|
+|repvgg-A1(lr=0.1)| 807.43M | 44.55M | 92.36|
+|repvgg-A1(lr=0.01)| 807.43M | 44.55M | 90.07|
 |repvgg-A2| 1797.01M | 96.25M | 92.28|
 |repvgg-B0| 978.42M | 51.77M | 92.30|
 |repvgg-B1| 3870.45M | 199.05M | 92.40|
@@ -693,3 +695,102 @@ And NO.180-NO.189 weight decay is 1e-4, NO.190-N0.199 weight decay is 4e-5
 |697|1-1-2-2-1|0.75-0.75-0.75-0.875-0.625|repvgg-vgg-vgg-vgg-repvgg|False-True-True-False-True|None-maxpool-maxpool-None-maxpool-None|cifar10|28.47|1.52||
 |698|2-1-6-6-4|0.375-0.375-0.5-0.5-0.75|repvgg-vgg-repvgg-vgg-vgg|False-True-True-False-True|None-maxpool-avgpool-None-maxpool-maxpool|cifar10|53.6|5.48||
 |699|1-1-2-4-3|0.875-0.875-0.125-1.0-1.0|repvgg-vgg-repvgg-repvgg-vgg|False-False-False-False-True|None-None-None-None-avgpool-maxpool|cifar10|66.14|7.96||
+|701|1-4-2-1-1|0.25-0.25-0.5-1.0-0.125|repvgg-vgg-repvgg-vgg-vgg|False-False-True-False-True|None-None-maxpool-None-maxpool-None|cifar10|8.78|0.35||
+|702|2-2-6-4-1|0.75-0.75-0.125-0.25-1.0|repvgg-repvgg-repvgg-vgg-vgg|False-False-True-True-False|None-None-avgpool-maxpool-None-maxpool|cifar10|37.49|0.5||
+|703|2-4-6-6-4|0.875-0.875-0.375-0.5-0.375|vgg-vgg-repvgg-vgg-repvgg|False-False-True-True-False|None-None-avgpool-avgpool-None-maxpool|cifar10|85.83|2.29||
+|704|1-3-6-4-4|0.375-0.375-1.0-0.5-0.375|repvgg-repvgg-vgg-repvgg-vgg|False-False-False-False-False|None-None-None-None-None-None|cifar10|68.12|2.59||
+|705|2-1-5-8-4|0.5-0.5-0.125-0.375-0.375|repvgg-repvgg-repvgg-vgg-vgg|False-False-True-True-False|None-None-avgpool-maxpool-None-None|cifar10|27.79|1.8||
+|706|1-4-2-7-3|1.0-1.0-1.0-0.875-0.625|repvgg-repvgg-vgg-repvgg-repvgg|False-False-False-False-True|None-None-None-None-maxpool-avgpool|cifar10|111.18|5.83||
+|707|2-2-3-2-4|0.625-0.625-0.625-0.5-0.125|repvgg-vgg-vgg-vgg-repvgg|False-False-False-False-False|None-None-None-None-None-maxpool|cifar10|37.17|0.61||
+|708|2-2-6-8-3|0.375-0.375-0.25-0.375-1.0|repvgg-vgg-vgg-repvgg-vgg|False-False-False-False-True|None-None-None-None-avgpool-avgpool|cifar10|42.52|5.85||
+|709|1-3-5-6-1|0.5-0.5-0.125-1.0-1.0|repvgg-repvgg-vgg-repvgg-vgg|False-False-False-True-False|None-None-None-maxpool-None-avgpool|cifar10|61.38|4.22||
+|710|1-1-1-5-4|0.875-0.875-0.875-0.875-0.125|repvgg-repvgg-repvgg-repvgg-repvgg|False-False-True-False-False|None-None-avgpool-None-None-None|cifar10|45.86|2.36||
+|711|2-1-1-1-2|0.5-0.5-0.375-0.125-0.75|vgg-repvgg-vgg-repvgg-vgg|False-False-True-True-True|None-None-maxpool-maxpool-maxpool-None|cifar10|19.83|1.49||
+|712|2-2-2-8-1|1.0-1.0-0.625-0.375-0.5|repvgg-repvgg-repvgg-vgg-vgg|False-False-True-True-False|None-None-maxpool-avgpool-None-None|cifar10|76.37|1.09||
+|713|1-4-3-6-4|0.375-0.375-0.625-0.875-0.125|repvgg-vgg-vgg-repvgg-repvgg|False-False-False-False-True|None-None-None-None-maxpool-avgpool|cifar10|54.28|2.82||
+|714|2-3-4-5-2|0.625-0.625-0.25-0.375-0.75|repvgg-repvgg-vgg-repvgg-repvgg|False-False-False-True-False|None-None-None-avgpool-None-None|cifar10|41.84|2.12||
+|715|1-2-1-7-1|0.625-0.625-0.5-0.5-1.0|vgg-repvgg-repvgg-repvgg-repvgg|False-False-True-False-False|None-None-maxpool-None-None-None|cifar10|27.82|1.61||
+|716|1-1-4-4-3|0.75-0.75-1.0-0.375-0.625|vgg-vgg-repvgg-vgg-vgg|False-False-True-False-False|None-None-avgpool-None-None-None|cifar10|53.01|3.01||
+|717|2-4-5-8-1|0.25-0.25-0.125-0.75-0.125|vgg-vgg-repvgg-repvgg-vgg|False-True-True-True-False|None-avgpool-maxpool-avgpool-None-maxpool|cifar10|44.14|2.49||
+|718|1-2-3-3-2|0.375-0.375-0.125-0.75-1.0|vgg-repvgg-vgg-vgg-vgg|False-False-True-False-True|None-None-maxpool-None-avgpool-None|cifar10|28.04|3.96||
+|719|2-1-1-7-2|0.875-0.875-0.625-0.25-1.0|vgg-vgg-repvgg-vgg-repvgg|False-True-False-False-False|None-avgpool-None-None-None-avgpool|cifar10|55.71|3.03||
+|720|1-4-3-8-1|1.0-1.0-0.375-0.875-0.125|vgg-vgg-repvgg-vgg-repvgg|False-False-True-False-False|None-None-maxpool-None-None-maxpool|cifar10|97.22|3.61||
+|721|2-2-4-1-4|1.0-1.0-0.5-1.0-0.625|vgg-vgg-repvgg-vgg-repvgg|False-False-True-True-True|None-None-avgpool-avgpool-avgpool-avgpool|cifar10|84.88|3.92||
+|722|1-4-3-7-3|0.375-0.375-0.125-1.0-0.875|repvgg-repvgg-repvgg-vgg-vgg|False-True-True-True-True|None-avgpool-avgpool-avgpool-maxpool-None|cifar10|82.43|8.26||
+|723|1-4-1-6-2|0.125-0.125-0.75-0.25-0.125|vgg-vgg-vgg-repvgg-vgg|False-True-False-True-True|None-avgpool-None-avgpool-maxpool-avgpool|cifar10|5.48|0.32||
+|724|2-3-6-1-2|1.0-1.0-0.875-0.5-0.75|vgg-vgg-repvgg-vgg-repvgg|False-False-True-False-False|None-None-maxpool-None-None-None|cifar10|117.96|2.68||
+|725|2-2-2-3-1|1.0-1.0-0.375-1.0-0.625|repvgg-vgg-repvgg-vgg-repvgg|False-True-True-True-True|None-avgpool-avgpool-avgpool-maxpool-avgpool|cifar10|85.29|2.19||
+|726|1-4-3-1-2|1.0-1.0-0.125-0.25-0.875|repvgg-repvgg-repvgg-vgg-repvgg|False-True-True-False-False|None-maxpool-maxpool-None-None-maxpool|cifar10|48.82|2.24||
+|727|1-3-2-8-3|0.75-0.75-0.625-0.875-0.5|repvgg-repvgg-vgg-vgg-vgg|False-True-False-False-False|None-maxpool-None-None-None-None|cifar10|83.26|5.18||
+|728|1-2-3-3-4|0.5-0.5-0.375-0.125-1.0|vgg-repvgg-vgg-vgg-repvgg|False-False-False-False-True|None-None-None-None-avgpool-None|cifar10|38.74|7.34||
+|729|2-4-3-5-1|0.25-0.25-0.25-0.5-0.25|vgg-vgg-vgg-repvgg-vgg|False-True-True-True-False|None-avgpool-maxpool-maxpool-None-maxpool|cifar10|17.48|0.81||
+|730|2-3-2-1-2|1.0-1.0-0.5-0.375-0.5|vgg-repvgg-repvgg-repvgg-vgg|False-True-True-True-False|None-avgpool-avgpool-avgpool-None-None|cifar10|77.23|1.09||
+|731|2-1-3-8-2|0.875-0.875-0.5-0.25-0.625|repvgg-repvgg-vgg-vgg-repvgg|False-True-False-True-False|None-avgpool-None-avgpool-None-None|cifar10|53.7|1.57||
+|732|1-4-6-7-4|0.625-0.625-0.625-0.875-0.625|vgg-repvgg-vgg-vgg-repvgg|False-True-True-False-True|None-maxpool-avgpool-None-maxpool-None|cifar10|96.09|6.67||
+|733|2-3-1-5-2|0.5-0.5-0.25-0.25-0.875|vgg-vgg-vgg-vgg-vgg|False-False-True-False-False|None-None-maxpool-None-None-avgpool|cifar10|29.31|2.29||
+|734|2-2-4-4-2|0.5-0.5-0.375-1.0-0.125|repvgg-repvgg-repvgg-vgg-repvgg|False-True-True-False-True|None-maxpool-maxpool-None-maxpool-avgpool|cifar10|50.79|2.17||
+|735|2-1-4-2-2|0.125-0.125-1.0-0.75-0.375|repvgg-repvgg-repvgg-repvgg-repvgg|False-False-False-True-True|None-None-None-avgpool-avgpool-None|cifar10|41.37|1.67||
+|736|2-4-2-7-4|0.875-0.875-0.75-0.375-0.875|repvgg-vgg-repvgg-vgg-vgg|False-True-False-False-True|None-maxpool-None-None-avgpool-None|cifar10|100.58|6.67||
+|737|1-3-5-4-2|0.5-0.5-0.375-0.5-0.125|repvgg-vgg-repvgg-vgg-repvgg|False-False-True-False-True|None-None-maxpool-None-avgpool-avgpool|cifar10|22.69|0.74||
+|738|1-4-4-1-4|0.875-0.875-0.875-1.0-0.25|repvgg-repvgg-repvgg-repvgg-vgg|False-False-True-True-False|None-None-maxpool-maxpool-None-None|cifar10|62.83|1.51||
+|739|1-2-6-7-1|0.5-0.5-0.875-0.125-0.625|repvgg-vgg-vgg-vgg-repvgg|False-False-False-False-False|None-None-None-None-None-maxpool|cifar10|45.82|0.8||
+|740|2-1-5-5-2|1.0-1.0-0.25-0.375-0.5|repvgg-vgg-repvgg-repvgg-vgg|False-False-False-False-False|None-None-None-None-None-maxpool|cifar10|61.57|1.31||
+|741|1-1-4-4-3|0.875-0.875-0.375-0.5-1.0|repvgg-vgg-vgg-vgg-repvgg|False-False-True-True-False|None-None-maxpool-avgpool-None-None|cifar10|43.65|5.93||
+|742|1-3-4-1-1|0.5-0.5-1.0-0.625-0.375|vgg-repvgg-vgg-vgg-repvgg|False-True-False-True-True|None-maxpool-None-maxpool-avgpool-avgpool|cifar10|42.96|0.97||
+|743|2-4-3-2-3|0.625-0.625-1.0-0.5-0.625|repvgg-repvgg-vgg-repvgg-repvgg|False-True-True-True-False|None-maxpool-maxpool-avgpool-None-None|cifar10|66.09|2.93||
+|744|2-3-4-6-1|0.25-0.25-1.0-0.875-0.75|repvgg-vgg-repvgg-vgg-vgg|False-True-True-False-False|None-maxpool-maxpool-None-None-avgpool|cifar10|77.56|3.77||
+|745|2-4-1-6-2|0.875-0.875-0.625-0.625-0.125|repvgg-vgg-repvgg-vgg-repvgg|False-True-False-False-True|None-maxpool-None-None-maxpool-maxpool|cifar10|83.01|1.58||
+|746|2-3-1-1-2|0.375-0.375-0.625-0.25-0.5|repvgg-repvgg-repvgg-vgg-repvgg|False-False-True-False-True|None-None-avgpool-None-avgpool-maxpool|cifar10|14.76|0.83||
+|747|2-4-5-2-2|0.375-0.375-0.625-0.5-0.875|vgg-vgg-vgg-vgg-vgg|False-True-False-False-True|None-maxpool-None-None-maxpool-None|cifar10|40.69|2.85||
+|748|1-1-6-7-1|0.25-0.25-1.0-0.375-0.75|vgg-repvgg-vgg-repvgg-repvgg|False-True-False-True-False|None-maxpool-None-maxpool-None-None|cifar10|60.72|1.71||
+|749|2-4-6-3-3|0.375-0.375-0.25-1.0-0.375|vgg-vgg-repvgg-vgg-repvgg|False-True-True-False-True|None-avgpool-avgpool-None-maxpool-maxpool|cifar10|39.5|2.44||
+|750|1-3-5-8-1|0.75-0.75-0.75-1.0-0.875|repvgg-vgg-vgg-vgg-repvgg|False-True-False-False-False|None-avgpool-None-None-None-avgpool|cifar10|115.29|5.83||
+|751|1-3-2-1-3|0.125-0.125-0.5-0.625-0.375|vgg-vgg-repvgg-vgg-repvgg|False-True-True-True-False|None-avgpool-avgpool-avgpool-None-None|cifar10|8.63|1.08||
+|752|2-1-2-1-3|0.625-0.625-0.25-0.625-0.375|repvgg-repvgg-vgg-vgg-vgg|False-True-True-False-True|None-avgpool-avgpool-None-maxpool-None|cifar10|25.41|1.04||
+|753|2-2-1-4-3|1.0-1.0-0.5-0.125-0.75|vgg-vgg-repvgg-repvgg-repvgg|False-False-False-True-False|None-None-None-avgpool-None-avgpool|cifar10|73.21|2.97||
+|754|1-3-5-2-1|0.125-0.125-0.5-0.25-0.625|repvgg-repvgg-repvgg-vgg-vgg|False-False-False-False-True|None-None-None-None-maxpool-None|cifar10|12.33|0.42||
+|755|2-1-6-7-3|0.75-0.75-0.5-0.125-1.0|repvgg-repvgg-repvgg-repvgg-repvgg|False-True-True-True-True|None-avgpool-maxpool-maxpool-maxpool-avgpool|cifar10|62.1|5.2||
+|756|2-2-1-7-1|0.375-0.375-0.625-0.75-0.125|repvgg-repvgg-repvgg-repvgg-repvgg|False-False-True-False-False|None-None-maxpool-None-None-None|cifar10|44.24|2.28||
+|757|2-4-6-6-2|0.125-0.125-0.5-0.875-0.125|vgg-vgg-vgg-repvgg-vgg|False-True-True-False-True|None-avgpool-maxpool-None-avgpool-None|cifar10|52.55|2.75||
+|758|1-1-5-7-2|0.375-0.375-0.25-0.875-0.875|vgg-repvgg-vgg-repvgg-vgg|False-False-False-True-True|None-None-None-avgpool-avgpool-None|cifar10|60.18|5.54||
+|759|1-2-1-5-2|0.75-0.75-0.75-0.5-0.125|vgg-repvgg-vgg-vgg-vgg|False-True-True-True-True|None-avgpool-maxpool-maxpool-maxpool-None|cifar10|26.52|0.9||
+|760|1-1-4-5-4|0.25-0.25-0.125-0.375-1.0|repvgg-repvgg-vgg-repvgg-repvgg|False-False-False-False-False|None-None-None-None-None-avgpool|cifar10|37.26|7.89||
+|761|2-1-6-6-3|0.625-0.625-0.5-0.75-0.375|vgg-repvgg-repvgg-vgg-vgg|False-True-False-True-True|None-maxpool-None-maxpool-maxpool-None|cifar10|65.52|3.01||
+|762|2-3-3-1-2|0.625-0.625-0.375-0.75-1.0|vgg-vgg-vgg-vgg-repvgg|False-True-True-True-True|None-avgpool-avgpool-maxpool-maxpool-avgpool|cifar10|45.49|3.45||
+|763|2-1-6-4-3|0.5-0.5-0.875-0.375-1.0|repvgg-vgg-vgg-repvgg-repvgg|False-True-False-False-True|None-avgpool-None-None-maxpool-maxpool|cifar10|77.27|6.13||
+|764|1-1-6-1-3|0.5-0.5-0.875-0.125-0.375|vgg-vgg-repvgg-vgg-vgg|False-False-False-True-True|None-None-None-maxpool-maxpool-avgpool|cifar10|45.0|1.36||
+|765|2-1-2-4-4|0.625-0.625-0.875-1.0-0.375|vgg-vgg-repvgg-vgg-vgg|False-False-False-True-True|None-None-None-avgpool-maxpool-avgpool|cifar10|67.99|3.66||
+|766|1-1-1-7-1|0.25-0.25-0.75-0.625-1.0|vgg-vgg-repvgg-repvgg-repvgg|False-True-True-True-False|None-avgpool-avgpool-avgpool-None-maxpool|cifar10|29.29|2.28||
+|767|2-1-4-3-1|0.625-0.625-0.5-0.875-0.625|repvgg-vgg-repvgg-vgg-repvgg|False-True-False-True-True|None-maxpool-None-maxpool-maxpool-maxpool|cifar10|47.27|1.85||
+|768|1-4-4-7-3|0.5-0.5-0.25-0.875-0.375|repvgg-vgg-repvgg-vgg-repvgg|False-False-True-True-False|None-None-maxpool-avgpool-None-avgpool|cifar10|61.5|3.91||
+|769|2-3-6-1-3|0.375-0.375-0.125-0.375-0.625|vgg-repvgg-vgg-repvgg-repvgg|False-False-False-False-True|None-None-None-None-avgpool-None|cifar10|19.84|2.17||
+|770|2-4-2-1-4|0.25-0.25-0.625-0.75-0.875|vgg-repvgg-repvgg-vgg-repvgg|False-False-False-False-True|None-None-None-None-maxpool-avgpool|cifar10|36.72|6.42||
+|771|2-4-6-1-1|0.25-0.25-0.125-1.0-0.125|vgg-repvgg-repvgg-vgg-vgg|False-True-False-True-False|None-maxpool-None-maxpool-None-avgpool|cifar10|7.37|0.21||
+|772|1-2-4-7-3|0.375-0.375-0.25-1.0-0.75|repvgg-vgg-vgg-vgg-repvgg|False-True-False-True-True|None-avgpool-None-maxpool-avgpool-avgpool|cifar10|77.7|7.21||
+|773|2-1-3-3-1|0.875-0.875-0.5-0.625-0.375|repvgg-vgg-repvgg-vgg-vgg|False-True-False-True-True|None-maxpool-None-avgpool-avgpool-avgpool|cifar10|54.51|1.0||
+|774|1-3-1-3-4|0.375-0.375-0.625-0.75-0.5|repvgg-repvgg-vgg-vgg-vgg|False-False-False-False-False|None-None-None-None-None-None|cifar10|27.5|3.05||
+|775|2-2-5-5-3|1.0-1.0-1.0-0.375-0.75|repvgg-repvgg-vgg-repvgg-repvgg|False-False-True-True-True|None-None-avgpool-avgpool-avgpool-None|cifar10|120.06|4.21||
+|776|2-4-3-3-1|0.875-0.875-0.5-0.375-0.375|repvgg-vgg-repvgg-repvgg-repvgg|False-False-True-False-False|None-None-maxpool-None-None-maxpool|cifar10|70.57|0.64||
+|777|2-4-5-5-4|0.75-0.75-0.375-0.125-0.625|vgg-repvgg-vgg-vgg-repvgg|False-False-True-False-True|None-None-avgpool-None-maxpool-avgpool|cifar10|63.14|3.12||
+|778|1-3-2-1-2|0.625-0.625-0.25-0.875-0.75|repvgg-vgg-vgg-vgg-vgg|False-False-True-False-False|None-None-avgpool-None-None-maxpool|cifar10|23.1|2.24||
+|779|2-1-3-3-2|1.0-1.0-0.75-0.75-1.0|vgg-repvgg-repvgg-vgg-repvgg|False-False-True-True-True|None-None-maxpool-avgpool-avgpool-maxpool|cifar10|89.93|4.38||
+|780|2-3-6-2-2|0.5-0.5-1.0-0.75-0.125|vgg-vgg-vgg-vgg-repvgg|False-True-True-True-False|None-avgpool-maxpool-maxpool-None-None|cifar10|76.97|1.52||
+|781|2-3-4-7-4|0.875-0.875-0.5-0.5-0.5|vgg-repvgg-repvgg-repvgg-vgg|False-False-False-False-True|None-None-None-None-avgpool-maxpool|cifar10|85.34|3.29||
+|782|2-1-5-4-2|0.375-0.375-0.375-0.375-0.75|repvgg-vgg-repvgg-vgg-repvgg|False-True-False-True-True|None-maxpool-None-maxpool-maxpool-None|cifar10|24.61|2.06||
+|783|1-1-1-8-4|0.75-0.75-0.875-0.625-0.625|repvgg-vgg-repvgg-vgg-repvgg|False-True-True-False-False|None-maxpool-maxpool-None-None-None|cifar10|51.16|5.08||
+|784|2-3-2-3-4|0.25-0.25-0.125-0.125-1.0|vgg-vgg-repvgg-vgg-vgg|False-False-False-True-False|None-None-None-maxpool-None-None|cifar10|34.36|7.27||
+|785|1-3-2-1-3|1.0-1.0-0.5-0.375-0.375|vgg-vgg-vgg-vgg-vgg|False-True-False-False-False|None-avgpool-None-None-None-maxpool|cifar10|39.53|1.08||
+|786|1-1-5-3-1|0.875-0.875-0.625-1.0-1.0|repvgg-repvgg-vgg-vgg-vgg|False-True-False-True-False|None-maxpool-None-maxpool-None-avgpool|cifar10|52.81|2.85||
+|787|1-4-4-5-2|0.5-0.5-0.625-0.625-0.75|repvgg-vgg-repvgg-repvgg-vgg|False-False-True-False-False|None-None-maxpool-None-None-maxpool|cifar10|47.11|3.16||
+|788|2-1-6-3-1|0.625-0.625-0.125-0.875-0.875|repvgg-repvgg-repvgg-repvgg-vgg|False-False-False-False-True|None-None-None-None-maxpool-avgpool|cifar10|39.24|1.89||
+|789|2-3-2-1-4|0.5-0.5-0.875-0.125-0.125|repvgg-vgg-vgg-vgg-repvgg|False-True-True-False-True|None-avgpool-maxpool-None-avgpool-avgpool|cifar10|27.89|0.35||
+|790|1-1-3-1-4|0.5-0.5-0.5-0.625-0.375|repvgg-vgg-vgg-vgg-repvgg|False-False-False-False-False|None-None-None-None-None-maxpool|cifar10|15.8|1.47||
+|791|1-4-2-1-2|0.375-0.375-1.0-0.625-1.0|vgg-vgg-vgg-repvgg-vgg|False-False-True-True-False|None-None-avgpool-avgpool-None-avgpool|cifar10|32.8|3.49||
+|792|1-2-3-4-4|0.5-0.5-0.5-0.75-0.25|repvgg-repvgg-repvgg-vgg-repvgg|False-True-True-True-False|None-maxpool-maxpool-avgpool-None-None|cifar10|31.9|1.89||
+|793|1-3-5-8-2|0.875-0.875-1.0-0.625-1.0|repvgg-repvgg-vgg-vgg-vgg|False-False-False-True-False|None-None-None-avgpool-None-None|cifar10|106.51|5.65||
+|794|2-3-3-5-3|0.875-0.875-1.0-0.75-0.125|repvgg-repvgg-vgg-vgg-repvgg|False-True-False-True-False|None-avgpool-None-avgpool-None-avgpool|cifar10|100.82|2.21||
+|795|1-4-5-1-3|0.625-0.625-1.0-0.75-0.875|vgg-repvgg-vgg-vgg-repvgg|False-True-True-True-False|None-maxpool-avgpool-maxpool-None-avgpool|cifar10|77.98|5.31||
+|796|2-1-1-5-4|0.5-0.5-0.125-0.5-0.625|vgg-repvgg-repvgg-repvgg-repvgg|False-True-False-False-True|None-maxpool-None-None-maxpool-maxpool|cifar10|35.51|3.77||
+|797|1-3-2-1-1|0.875-0.875-0.125-0.5-0.625|repvgg-repvgg-vgg-vgg-repvgg|False-True-False-False-True|None-avgpool-None-None-maxpool-avgpool|cifar10|25.69|0.49||
+|798|1-4-4-6-2|1.0-1.0-0.125-0.5-0.5|repvgg-repvgg-vgg-vgg-vgg|False-True-True-True-True|None-avgpool-maxpool-avgpool-avgpool-None|cifar10|56.28|1.81||
+|799|1-2-1-2-4|1.0-1.0-0.5-0.75-0.375|vgg-vgg-repvgg-repvgg-repvgg|False-False-False-True-True|None-None-None-maxpool-maxpool-maxpool|cifar10|35.79|1.89||

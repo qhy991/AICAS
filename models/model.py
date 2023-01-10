@@ -31,16 +31,16 @@ def VGGBlock(in_channels,
 
 
 def make_layer(stage_num, layer_num, channel_num_in, channel_num_out, op_type,
-               with_maxpool,pool_type):
+               with_pool,pool_type):
     channel_nums_in = [channel_num_in] + [channel_num_out] * (layer_num - 1)
     layers = []
     if stage_num == 0 :
         first_layer_stride = 1
     else:
         first_layer_stride = 2
-    if with_maxpool == True:
+    if with_pool == True:
         if pool_type == "avgpool":
-            layers.append(("maxpool", nn.AvgPool2d(2, 2)))
+            layers.append(("avgpool", nn.AvgPool2d(2, 2)))
         else:
             layers.append(("maxpool", nn.MaxPool2d(2, 2)))
         if op_type == 'vgg':
@@ -134,9 +134,9 @@ class Net(nn.Module):
                 config["model"]["stage_ratio"][4]),
             config["model"]["op_type"][4], config["model"]["with_pool"][4],
             config["model"]["pool_type"][4])
-        if config["model"]['with_last_pool']:
+        if config["model"]["with_pool"][5]:
             self.pool = True
-            if config["model"]["pool_type"] == "maxpool":
+            if config["model"]["pool_type"][5] == "maxpool":
                 self.pool = nn.MaxPool2d(2,2)
             else:
                 self.pool = nn.AvgPool2d(2,2)
@@ -164,3 +164,11 @@ class Net(nn.Module):
         
         
         return out
+
+if __name__ == "__main__":
+    import sys
+    from easydict import EasyDict
+    import yaml
+    config_path = "/home/qhy/Reserach/AICAS/config/653-stage-1_3_3_1_4-ratio-0.5_0.5_0.5_0.25_1.0-op-repvgg_repvgg_repvgg_repvgg_vgg-max-False_False_False_True_False-pool_type-None_None_None_avgpool_None_maxpool-cifar10.yaml"
+    config = EasyDict(yaml.full_load(open(config_path)))
+    print(Net(config,10))
