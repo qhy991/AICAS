@@ -9,8 +9,10 @@ from timm.utils import accuracy, AverageMeter
 import torch.nn as nn
 from models.RepVGGBlock import RepVGGBlock
 from data import mixup_data, mixup_criterion
-
-
+from torchvision import datasets
+from torchvision import transforms
+from torch.utils.data import DataLoader
+import copy
 def seed_all(seed=1029):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -204,13 +206,14 @@ def finetune_one_epoch(config, model, criterion, train_loader, optimizer,
 
         optimizer.zero_grad()
         loss.backward()
-        writer.add_scalar('Loss/Train', loss, epoch)
-        writer.add_scalar('Lr/base',
-                          optimizer.state_dict()['param_groups'][0]['lr'],
-                          epoch)
-        writer.add_scalar('Lr/repvgg',
-                          optimizer.state_dict()['param_groups'][1]['lr'],
-                          epoch)
+        if writer != None:
+            writer.add_scalar('Loss/Train', loss, epoch)
+            writer.add_scalar('Lr/base',
+                            optimizer.state_dict()['param_groups'][0]['lr'],
+                            epoch)
+            writer.add_scalar('Lr/repvgg',
+                            optimizer.state_dict()['param_groups'][1]['lr'],
+                            epoch)
 
         if 'hs' in config.model:
             grad_norm = nn.utils.clip_grad_norm_(model.parameters(),
@@ -231,17 +234,19 @@ def finetune_one_epoch(config, model, criterion, train_loader, optimizer,
             lr = optimizer.param_groups[0]['lr']
             memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
             etas = batch_time.avg * (num_steps - idx)
-            logger.info(
-                f'Train: [{epoch}/{config.train.epochs}][{idx}/{num_steps}]\t'
-                f'eta {datetime.timedelta(seconds=int(etas))} lr {lr:.6f}\t'
-                f'time {batch_time.val:.4f} ({batch_time.avg:.4f})\t'
-                f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
-                f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
-                f'mem {memory_used:.0f}MB')
+            if logger!= None:
+                logger.info(
+                    f'Train: [{epoch}/{config.train.epochs}][{idx}/{num_steps}]\t'
+                    f'eta {datetime.timedelta(seconds=int(etas))} lr {lr:.6f}\t'
+                    f'time {batch_time.val:.4f} ({batch_time.avg:.4f})\t'
+                    f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                    f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
+                    f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
-    logger.info(
-        f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}"
-    )
+    if logger!= None:
+        logger.info(
+            f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}"
+        )
 
 
 def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch,
@@ -284,13 +289,14 @@ def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch,
 
         optimizer.zero_grad()
         loss.backward()
-        writer.add_scalar('Loss/Train', loss, epoch)
-        writer.add_scalar('Lr/base',
-                          optimizer.state_dict()['param_groups'][0]['lr'],
-                          epoch)
-        writer.add_scalar('Lr/repvgg',
-                          optimizer.state_dict()['param_groups'][1]['lr'],
-                          epoch)
+        if writer!=None:
+            writer.add_scalar('Loss/Train', loss, epoch)
+            writer.add_scalar('Lr/base',
+                            optimizer.state_dict()['param_groups'][0]['lr'],
+                            epoch)
+            writer.add_scalar('Lr/repvgg',
+                            optimizer.state_dict()['param_groups'][1]['lr'],
+                            epoch)
 
         if 'hs' in config.model:
             grad_norm = nn.utils.clip_grad_norm_(model.parameters(),
@@ -311,17 +317,19 @@ def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch,
             lr = optimizer.param_groups[0]['lr']
             memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
             etas = batch_time.avg * (num_steps - idx)
-            logger.info(
-                f'Train: [{epoch}/{config.train.epochs}][{idx}/{num_steps}]\t'
-                f'eta {datetime.timedelta(seconds=int(etas))} lr {lr:.6f}\t'
-                f'time {batch_time.val:.4f} ({batch_time.avg:.4f})\t'
-                f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
-                f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
-                f'mem {memory_used:.0f}MB')
+            if logger!= None:
+                logger.info(
+                    f'Train: [{epoch}/{config.train.epochs}][{idx}/{num_steps}]\t'
+                    f'eta {datetime.timedelta(seconds=int(etas))} lr {lr:.6f}\t'
+                    f'time {batch_time.val:.4f} ({batch_time.avg:.4f})\t'
+                    f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                    f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
+                    f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
-    logger.info(
-        f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}"
-    )
+    if logger!= None:
+        logger.info(
+            f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}"
+        )
 
 
 def accuracy_per_class(output, target, topk=(1, )):
@@ -392,18 +400,98 @@ def validate(config, val_loader, model, logger, num_classes, epoch, writer):
 
         if idx % config.output.print_freq == 0:
             memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
-            logger.info(f'Test: [{idx}/{len(val_loader)}]\t'
-                        f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                        f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
-                        f'Acc@1 {acc1_meter.val:.3f} ({acc1_meter.avg:.3f})\t'
-                        f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
-                        f'Mem {memory_used:.0f}MB')
-    logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
-    logger.info(f' * per class {np.array(class_correct)/np.array(class_total_1)} ')
-    logger.info(class_total)
+            if logger!= None:
+                logger.info(f'Test: [{idx}/{len(val_loader)}]\t'
+                            f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                            f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                            f'Acc@1 {acc1_meter.val:.3f} ({acc1_meter.avg:.3f})\t'
+                            f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
+                            f'Mem {memory_used:.0f}MB')
+    if logger!= None:
+        logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
+        logger.info(f' * per class {np.array(class_correct)/np.array(class_total_1)} ')
+        logger.info(class_total)
     if num_classes == 10:
         for i in range(num_classes):
-            writer.add_scalar('class-Acc/' + classes[i],
-                            class_correct[i] / class_total_1[i], epoch)
+            if writer != None:
+                writer.add_scalar('class-Acc/' + classes[i],
+                                class_correct[i] / class_total_1[i], epoch)
 
     return acc1_meter.avg, acc5_meter.avg, loss_meter.avg
+
+def get_dataset(config):
+    cifar10_data_dir = '~/data/pytorch_cifar10'
+    cifar100_data_dir = '~/data/pytorch_cifar100'
+
+    if config.dataset== "cifar10":
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
+
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
+    else :
+        mean = [0.5070751592371323, 0.48654887331495095, 0.4409178433670343]
+        std = [0.2673342858792401, 0.2564384629170883, 0.27615047132568404]
+        transform_train = transforms.Compose([
+            #transforms.ToPILImage(),
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
+
+    if config.dataset == 'cifar10':
+        num_classes = 10
+        train_dataset = datasets.CIFAR10(root=cifar10_data_dir,
+                                            train=True,
+                                            download=True,
+                                            transform=transform_train)
+        val_dataset = datasets.CIFAR10(root=cifar10_data_dir,
+                                        train=False,
+                                        download=True,
+                                        transform=transform_test)
+    elif config.dataset == 'cifar100':
+        num_classes = 100
+        train_dataset = datasets.CIFAR100(root=cifar100_data_dir,
+                                            train=True,
+                                            download=True,
+                                            transform=transform_train)
+        val_dataset = datasets.CIFAR100(root=cifar100_data_dir,
+                                        train=False,
+                                        download=True,
+                                        transform=transform_test)
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset,
+        batch_size=config.train.batch_size,
+        shuffle=False,
+        num_workers=config.train.workers,
+        pin_memory=True,
+        sampler=None)
+    val_loader = torch.utils.data.DataLoader(val_dataset,
+                                                batch_size=config.val.batch_size,
+                                                shuffle=False,
+                                                num_workers=config.val.workers,
+                                                pin_memory=True,
+                                                sampler=None)
+    return train_loader,val_loader,num_classes
+
+
+def repvgg_model_convert(model, do_copy=True):
+    if do_copy:
+        deploy_model = copy.deepcopy(model)
+    for module in deploy_model.modules():
+        if hasattr(module, 'switch_to_deploy'):
+            module.switch_to_deploy()
+    return deploy_model

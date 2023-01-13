@@ -15,7 +15,7 @@ from logger import create_logger
 from lr_scheduler import build_lr_scheduler
 from models import model as M
 from optimizer import build_optimizer
-from utils import seed_all, save_checkpoint, train_one_epoch, validate, get_grad_norm
+from utils import seed_all, save_checkpoint, train_one_epoch, validate, get_grad_norm,repvgg_model_convert,get_dataset
 import matplotlib.pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import datasets
@@ -30,7 +30,6 @@ args = parser.parse_args()
 
 config = EasyDict(yaml.full_load(open(args.config)))
 
-
 def add_scalars(
     writer,
     epoch,
@@ -41,14 +40,6 @@ def add_scalars(
     writer.add_scalar('Accuracy/Val', acc_val, epoch)
 
 
-def repvgg_model_convert(model, do_copy=True):
-    if do_copy:
-        deploy_model = copy.deepcopy(model)
-    for module in deploy_model.modules():
-        if hasattr(module, 'switch_to_deploy'):
-            module.switch_to_deploy()
-    return deploy_model
-
 
 def main(config, dataset):
     os.makedirs(config.output.dir, exist_ok=True)
@@ -58,80 +49,7 @@ def main(config, dataset):
                                                 'runs/result'),
                            flush_secs=30)
     logger = create_logger(config.output.dir, config.output.name)
-    cifar10_data_dir = '~/data/pytorch_cifar10'
-    cifar100_data_dir = '~/data/pytorch_cifar100'
-    # load dataset
-    # if args.dataset == "cifar10":
-    #     transforms_normalize = transforms.Normalize(
-    #         mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
-    #     transform_list = [transforms.ToTensor(), transforms_normalize]
-    #     transformer = transforms.Compose(transform_list)
-    # else:
-    #     pass
-    if config.dataset== "cifar10":
-        transform_train = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-        ])
-
-        transform_test = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-        ])
-    else :
-        mean = [0.5070751592371323, 0.48654887331495095, 0.4409178433670343]
-        std = [0.2673342858792401, 0.2564384629170883, 0.27615047132568404]
-        transform_train = transforms.Compose([
-            #transforms.ToPILImage(),
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(15),
-            transforms.ToTensor(),
-            transforms.Normalize(mean, std)
-        ])
-        transform_test = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean, std)
-        ])
-
-    if config.dataset == 'cifar10':
-        num_classes = 10
-        train_dataset = datasets.CIFAR10(root=cifar10_data_dir,
-                                         train=True,
-                                         download=True,
-                                         transform=transform_train)
-        val_dataset = datasets.CIFAR10(root=cifar10_data_dir,
-                                       train=False,
-                                       download=True,
-                                       transform=transform_test)
-    elif config.dataset == 'cifar100':
-        num_classes = 100
-        train_dataset = datasets.CIFAR100(root=cifar100_data_dir,
-                                          train=True,
-                                          download=True,
-                                          transform=transform_train)
-        val_dataset = datasets.CIFAR100(root=cifar100_data_dir,
-                                        train=False,
-                                        download=True,
-                                        transform=transform_test)
-    else:
-        raise ValueError('Unknown dataset_name=' + args.dataset)
-    
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset,
-        batch_size=config.train.batch_size,
-        shuffle=False,
-        num_workers=config.train.workers,
-        pin_memory=True,
-        sampler=None)
-    val_loader = torch.utils.data.DataLoader(val_dataset,
-                                             batch_size=config.val.batch_size,
-                                             shuffle=False,
-                                             num_workers=config.val.workers,
-                                             pin_memory=True,
-                                             sampler=None)
+    train_loader,val_loader,num_classes = get_dataset(config)
 
     model = M.Net(config, num_classes)
     optimizer = build_optimizer(config, model)

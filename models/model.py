@@ -140,26 +140,41 @@ class Net(nn.Module):
                 self.pool = nn.MaxPool2d(2,2)
             else:
                 self.pool = nn.AvgPool2d(2,2)
+        # self.pool = nn.AvgPool2d(2,2)
         self.gap = nn.AdaptiveAvgPool2d(output_size=1)
         # self.last_pool = last_pool
         # self.linear = nn.Linear(
         #     int(config["model"]["layer_num_max"][4] *
         #         config["model"]["stage_ratio"][4]), int(config["model"]["layer_num_max"][4] *
         #         config["model"]["stage_ratio"][4]))
-        self.linear = nn.Linear(
-            int(config["model"]["layer_num_max"][4] *
-                config["model"]["stage_ratio"][4]), num_classes)
+        if config["dataset"] == "cifar10":
+            self.linear = nn.Linear(
+                int(config["model"]["layer_num_max"][4] *
+                    config["model"]["stage_ratio"][4]), num_classes)
+        else:
+            self.linear = nn.Sequential(
+                nn.Linear(int(config["model"]["layer_num_max"][4] *
+                    config["model"]["stage_ratio"][4]), 4096),
+                nn.ReLU(inplace=True),
+                nn.Dropout(),
+                nn.Linear(4096, 4096),
+                nn.ReLU(inplace=True),
+                nn.Dropout(),
+                nn.Linear(4096, num_classes)
+            )
     def forward(self, input):
         out = self.stage_0(input)
         num = 1
         for stage in (self.stage_1, self.stage_2, self.stage_3, self.stage_4):
             for block in stage:
                 out = block(out)
-        # print(out.shape)
+                
         if self.pool:
             out = self.pool(out)
         out = self.gap(out)
         out = self.linear(out.view(out.size(0), -1))
+        # out = self.classifier(out.view(out.size(0), -1))
+        
         # out = self.linear2(out)
         
         

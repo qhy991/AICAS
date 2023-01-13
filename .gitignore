@@ -133,3 +133,7 @@ data/
 log/
 *.pth
 *.txt
+*.onnx
+*.npy
+/quantization/qmodel
+/quantization/qmodel-pot
