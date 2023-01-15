@@ -1,2 +1,5 @@
-python3 train.py --config ./config/cifar100/118-stage-1_2_1_3_2-ratio-0.5_0.5_0.75_0.5_0.25-op-vgg_vgg_vgg_repvgg_repvgg-pool-False_False_False_False_False_True-pool_type-None_None_None_None_None_avgpool-cifar100.yaml
-python3 train.py --config ./config/cifar100/119-stage-2_2_1_1_1-ratio-0.625_0.625_0.625_1.0_0.125-op-vgg_vgg_repvgg_repvgg_repvgg-pool-False_False_False_True_True_True-pool_type-None_None_None_maxpool_avgpool_maxpool-cifar100.yaml
+python3 train.py --config ./config/cifar100/210-stage-2_1_2_4_2-ratio-0.25_0.25_1.0_0.75_0.125-op-vgg_vgg_vgg_repvgg_vgg-pool-False_True_True_False_True_False-pool_type-None_avgpool_avgpool_None_maxpool_None-cifar100.yaml
+python3 train.py --config ./config/cifar100/211-stage-1_1_4_6_3-ratio-0.5_0.5_0.375_0.25_0.5-op-vgg_vgg_vgg_vgg_repvgg-pool-False_False_True_False_False_True-pool_type-None_None_avgpool_None_None_maxpool-cifar100.yaml
+python3 train.py --config ./config/cifar100/212-stage-2_2_6_6_1-ratio-0.5_0.5_0.75_0.125_0.25-op-vgg_repvgg_repvgg_repvgg_vgg-pool-False_True_True_False_False_True-pool_type-None_avgpool_avgpool_None_None_maxpool-cifar100.yaml
+python3 train.py --config ./config/cifar100/213-stage-2_2_1_3_2-ratio-0.875_0.875_0.125_0.75_0.125-op-vgg_vgg_repvgg_repvgg_repvgg-pool-False_False_True_False_True_True-pool_type-None_None_maxpool_None_maxpool_avgpool-cifar100.yaml
+python3 train.py --config ./config/cifar100/214-stage-1_1_3_5_4-ratio-0.875_0.875_0.125_0.875_0.125-op-vgg_vgg_repvgg_vgg_repvgg-pool-False_False_False_False_True_False-pool_type-None_None_None_None_avgpool_None-cifar100.yaml

@@ -214,11 +214,25 @@ def build_optimizer(config, model):
     elif opt_lower == 'adam':
         print('adam')
         optimizer = optim.Adam(
-            parameters,
+            [{
+                'params':
+                base_stage_param,
+                'lr':
+                config.train.optimizer.base_lr,
+                "weight_decay":
+                config.train.optimizer.weight_decay_param.base_decay
+            }, {
+                'params':
+                repvgg_stage.parameters(),
+                'lr':
+                config.train.optimizer.repvgg_lr,
+                "weight_decay":
+                config.train.optimizer.weight_decay_param.repvgg_decay
+            }],
+            
             eps=config.train.optimizer.eps,
             betas=config.train.optimizer.betas,
-            lr=config.train.optimizer.base_lr,
-            weight_decay=config.train.optimizer.weight_decay_param.decay)
+            )
     elif opt_lower == 'adamw':
         optimizer = optim.AdamW(
             parameters,

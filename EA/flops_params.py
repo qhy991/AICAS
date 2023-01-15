@@ -24,7 +24,7 @@ def flops_params(code):
     temp_flops,temp_params = conv_comp(3,channel_num[0],32)
     flops_list.append(temp_flops)
     params_list.append(temp_params)
-    if layer_num[0] == 2:
+    if int(layer_num[0]) == 2:
         temp_flops,temp_params = conv_comp(channel_num[0],channel_num[0],32)
         flops_list.append(temp_flops)
         params_list.append(temp_params)
@@ -33,13 +33,13 @@ def flops_params(code):
         if pools[i]:
             temp_flops = pool_comp(channel_num[i],shape_size[i])
             flops_list.append(temp_flops)
-            for j in range(layer_num[i]):
+            for j in range(int(layer_num[i])):
                 temp_flops,temp_params = conv_comp(channel_num[i],channel_num[i],shape_size[i])
                 flops_list.append(temp_flops)
                 params_list.append(temp_params)
         else:
             temp_flops,temp_params = conv_comp(channel_num[i-1],channel_num[i],shape_size[i])
-            for j in range(layer_num[i]-1):
+            for j in range(int(layer_num[i]-1)):
                 temp_flops,temp_params = conv_comp(channel_num[i],channel_num[i],shape_size[i])
                 flops_list.append(temp_flops)
                 params_list.append(temp_params)

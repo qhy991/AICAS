@@ -292,10 +292,10 @@ def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch,
         if writer!=None:
             writer.add_scalar('Loss/Train', loss, epoch)
             writer.add_scalar('Lr/base',
-                            optimizer.state_dict()['param_groups'][0]['lr'],
+                            float(optimizer.state_dict()['param_groups'][0]['lr']),
                             epoch)
             writer.add_scalar('Lr/repvgg',
-                            optimizer.state_dict()['param_groups'][1]['lr'],
+                            float(optimizer.state_dict()['param_groups'][1]['lr']),
                             epoch)
 
         if 'hs' in config.model:
@@ -430,26 +430,42 @@ def get_dataset(config):
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
         ])
+        
 
         transform_test = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
         ])
+        
     else :
         mean = [0.5070751592371323, 0.48654887331495095, 0.4409178433670343]
         std = [0.2673342858792401, 0.2564384629170883, 0.27615047132568404]
         transform_train = transforms.Compose([
-            #transforms.ToPILImage(),
-            transforms.RandomCrop(32, padding=4),
+            transforms.RandomCrop(36, padding=4),
+            transforms.CenterCrop(32),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(15),
             transforms.ToTensor(),
             transforms.Normalize(mean, std)
         ])
+        # transform_train = transforms.Compose([
+        #     #transforms.ToPILImage(),
+        #     transforms.RandomCrop(32, padding=4),
+        #     transforms.RandomHorizontalFlip(),
+        #     transforms.RandomRotation(15),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize(mean, std)
+        # ])
         transform_test = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean, std)
         ])
+        # transform_test = transforms.Compose([
+        #     transforms.RandomCrop(36, padding=4),
+        #     transforms.CenterCrop(32),
+        #     transforms.RandomHorizontalFlip(),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize(mean, std)
+        # ])
 
     if config.dataset == 'cifar10':
         num_classes = 10

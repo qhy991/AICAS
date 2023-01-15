@@ -26,6 +26,8 @@ import copy
 parser = argparse.ArgumentParser(description="Train mix-VGG for AICAS2023")
 parser.add_argument("--config", required=True)
 parser.add_argument("--dataset", default="cifar10",required=False)
+parser.add_argument("--finetune", default=False,required=False)
+
 args = parser.parse_args()
 
 config = EasyDict(yaml.full_load(open(args.config)))
@@ -52,12 +54,23 @@ def main(config, dataset):
     train_loader,val_loader,num_classes = get_dataset(config)
 
     model = M.Net(config, num_classes)
+    if args.finetune:
+        if config.dataset == "cifar10":
+            # model_path = "/home/qhy/Reserach/AICAS/log/cifar10/" + args.config.split("/")[-1].replace(".yaml","/best_ckpt.pth")
+            model_path = "/home/qhy/Reserach/AICAS/log/search-best/" + args.config.split("/")[-1].replace(".yaml","/best_ckpt.pth")
+            
+        elif config.dataset == "cifar100":
+            model_path = "/home/qhy/Reserach/AICAS/log/cifar100/" + args.config.split("/")[-1].replace(".yaml","/best_ckpt.pth")
+        model.load_state_dict(torch.load(model_path)['model'])
+        print("load successfully!")
     optimizer = build_optimizer(config, model)
     model.cuda()
-    lr_scheduler = build_lr_scheduler(config, optimizer, len(train_loader))
+    if args.finetune:
+        lr_scheduler = build_lr_scheduler(config, optimizer, len(train_loader),"cos")
+    else:
+        lr_scheduler = build_lr_scheduler(config, optimizer, len(train_loader),"cos")
     if config.train.loss == 'crossentropy':
         criterion = nn.CrossEntropyLoss()
-
     max_accuracy = 0.0
     min_loss = float("inf")
     logger.info("Start training...")

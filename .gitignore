@@ -135,5 +135,6 @@ log/
 *.txt
 *.onnx
 *.npy
+*.yaml
 /quantization/qmodel
 /quantization/qmodel-pot

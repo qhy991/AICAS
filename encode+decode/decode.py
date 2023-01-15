@@ -16,7 +16,7 @@ def decode(vars,dataset,n=0,save=True,constrain="acc"):
     mapping_with_pool = {0:True,1:True,2:False}
     stage_ratio = [vars[i]/8 for i in range(5)]
     print(stage_ratio)
-    stage_layer = [vars[i] for i in range(-6,-1)]
+    stage_layer = [vars[i] for i in range(-5,0)]
     print(stage_layer)
     pool = [None]+[mapping_pool[vars[i]] for i in range(10,16) ]
     with_pool = [False]+[mapping_with_pool[vars[i]] for i in range(10,16) ]
@@ -31,8 +31,8 @@ def decode(vars,dataset,n=0,save=True,constrain="acc"):
     config['dataset'] = dataset
     config['model'] = {'stage_layer':stage_layer,'stage_ratio': stage_ratio ,'with_pool':with_pool,"pool_type":pool,'op_type':op_type,"layer_num_max":layer_num_max}
     config['train'] = {'start_epoch': 0, "epochs": 100, "warmup_epochs": 0, "warmup_lr": 1.0e-2, 
-                    "lr_scheduler":{"min_lr":1.0e-5,"decay_epochs":30,"decay_rate":0.1},"batch_size":256,"loss":"crossentropy","workers":4,
-                    "optimizer":{"name":"SGD","base_lr":0.1,"repvgg_lr":0.1,"momentum":0.9,"eps":1.0e-8,"betas":[0.9,0.999],"weight_decay_param":{"base_decay":5e-4,"repvgg_decay":1e-4,"echo":False}},
+                    "lr_scheduler":{"min_lr":1.0e-6,"decay_epochs":30,"decay_rate":0.1},"batch_size":256,"loss":"crossentropy","workers":4,
+                    "optimizer":{"name":"SGD","base_lr":0.35,"repvgg_lr":0.3,"momentum":0.9,"eps":1.0e-8,"betas":[0.9,0.999],"weight_decay_param":{"base_decay":5e-4,"repvgg_decay":1e-4,"echo":False}},
                     "label_smoothing":0.1,"clip_grad":0.0,"ema_alpha":0.0,"ema_update_period":8,"use_l2_norm":True,
                     "no_weight_decay": ["rbr_dense","rbr_1x1"]}
     config['val'] = {"batch_size":128,"workers":4} 
@@ -58,8 +58,8 @@ def decode_lite(vars,dataset):
     mapping_op = {0:'repvgg',1:'vgg'}
     mapping_pool = {0:'maxpool',1:'avgpool',2:"None"}
     mapping_with_pool = {0:True,1:True,2:False}
-    stage_ratio = [vars[i]/8 for i in range(5)]
-    stage_layer = [vars[i] for i in range(-6,-1)]
+    stage_ratio = [vars[i] for i in range(5)]
+    stage_layer = [vars[i] for i in range(-5,0)]
     pool = [None]+[mapping_pool[vars[i]] for i in range(10,16) ]
     with_pool = [False]+[mapping_with_pool[vars[i]] for i in range(10,16) ]
     op_type = [mapping_op[vars[i]] for i in range(5,10) ]
@@ -71,18 +71,18 @@ def decode_lite(vars,dataset):
         num_classes = 10
     else:
         num_classes = 100
-    model = M.Net(config, num_classes)
-    # print(model)
-    model = repvgg_model_convert(model)
-    input = torch.randn(1, 3, 32, 32)
-    flops,params = profile(model, inputs=(input, ))
-    dir = 'stage-' + str(stage_layer[0]) + '_' + str(stage_layer[1]) + '_' + str(stage_layer[2]) + '_' + str(stage_layer[3]) + '_' + str(stage_layer[4]) + '-ratio-' \
-    + str(stage_ratio[0]) + '_' + str(stage_ratio[1]) + '_' + str(stage_ratio[2]) + '_' + str(stage_ratio[3]) + '_' + str(stage_ratio[4]) +  \
-        '-op-' + str(op_type[0]) + '_' + str(op_type[1]) + '_' + str(op_type[2]) + '_' + str(op_type[3]) + '_' + str(op_type[4]) + '-pool-' + \
-            str(with_pool[0]) + '_' + str(with_pool[1]) + '_' + str(with_pool[2]) + '_' + str(with_pool[3]) + '_' + str(with_pool[4]) + '_' + str(with_pool[5]) + '-pool_type-'+\
-                str(pool[0]) + '_' + str(pool[1]) + '_' + str(pool[2]) + '_' + str(pool[3]) + '_' + str(pool[4]) + '_' + str(pool[5]) 
-    return dir,flops/1e6,params/1e6
-
+    # model = M.Net(config, num_classes)
+    # # print(model)
+    # model = repvgg_model_convert(model)
+    # input = torch.randn(1, 3, 32, 32)
+    # flops,params = profile(model, inputs=(input, ))
+    # dir = 'stage-' + str(stage_layer[0]) + '_' + str(stage_layer[1]) + '_' + str(stage_layer[2]) + '_' + str(stage_layer[3]) + '_' + str(stage_layer[4]) + '-ratio-' \
+    # + str(stage_ratio[0]) + '_' + str(stage_ratio[1]) + '_' + str(stage_ratio[2]) + '_' + str(stage_ratio[3]) + '_' + str(stage_ratio[4]) +  \
+    #     '-op-' + str(op_type[0]) + '_' + str(op_type[1]) + '_' + str(op_type[2]) + '_' + str(op_type[3]) + '_' + str(op_type[4]) + '-pool-' + \
+    #         str(with_pool[0]) + '_' + str(with_pool[1]) + '_' + str(with_pool[2]) + '_' + str(with_pool[3]) + '_' + str(with_pool[4]) + '_' + str(with_pool[5]) + '-pool_type-'+\
+    #             str(pool[0]) + '_' + str(pool[1]) + '_' + str(pool[2]) + '_' + str(pool[3]) + '_' + str(pool[4]) + '_' + str(pool[5]) 
+    # return dir,flops/1e6,params/1e6
+    return config
     
 # decode(list(res['Vars'][0]),"cifar10",1)  
         
