@@ -15,11 +15,13 @@ def decode(vars,dataset,n=0,save=True,constrain="acc"):
     mapping_pool = {0:'maxpool',1:'avgpool',2:"None"}
     mapping_with_pool = {0:True,1:True,2:False}
     stage_ratio = [vars[i]/8 for i in range(5)]
-    print(stage_ratio)
+    for ratio in stage_ratio:
+        print("- ",ratio)
     stage_layer = [vars[i] for i in range(-5,0)]
-    print(stage_layer)
-    pool = [None]+[mapping_pool[vars[i]] for i in range(10,16) ]
-    with_pool = [False]+[mapping_with_pool[vars[i]] for i in range(10,16) ]
+    for layer in stage_layer:
+        print("- ",layer)
+    pool = [None]+[mapping_pool[vars[i]] for i in range(11,16) ]
+    with_pool = [False]+[mapping_with_pool[vars[i]] for i in range(11,16) ]
     op_type = [mapping_op[vars[i]] for i in range(5,10) ]
     layer_num_max = [64, 64, 128, 256, 512]
     dir = str(n)+'-stage-' + str(stage_layer[0]) + '_' + str(stage_layer[1]) + '_' + str(stage_layer[2]) + '_' + str(stage_layer[3]) + '_' + str(stage_layer[4]) + '-ratio-' \
@@ -52,7 +54,7 @@ def decode(vars,dataset,n=0,save=True,constrain="acc"):
                 str(pool[0]) + '-' + str(pool[1]) + '-' + str(pool[2]) + '-' + str(pool[3]) + '-' + str(pool[4]) + '-' + str(pool[5]) + '|' + dataset+ "|" + str(round(flops/1e6,2))+"|"+str(round(params/1e6,2))+"|"+"|"+constrain+"|"
     if save:
         save_dict_to_yaml(config,save_path)
-        print(md_fmt)
+    print(md_fmt)
 
 def decode_lite(vars,dataset):
     mapping_op = {0:'repvgg',1:'vgg'}
