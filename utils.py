@@ -437,7 +437,7 @@ def get_dataset(config):
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
         ])
         
-    else :
+    elif config.dataset == "cifar100" :
         mean = [0.5070751592371323, 0.48654887331495095, 0.4409178433670343]
         std = [0.2673342858792401, 0.2564384629170883, 0.27615047132568404]
         transform_train = transforms.Compose([
@@ -466,7 +466,20 @@ def get_dataset(config):
         #     transforms.ToTensor(),
         #     transforms.Normalize(mean, std)
         # ])
-
+    elif config.dataset == "vww":
+        import pyvww
+        mean = [0.4698069, 0.44657433, 0.40738317]
+        std = [0.2762676, 0.27169052, 0.28657043]
+        transform_train = transforms.Compose([
+            # transforms.RandomCrop(36, padding=4),
+            # transforms.CenterCrop(32),
+            transforms.Resize((56,56)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            # transforms.Normalize(mean, std)
+        ])
+        
+        
     if config.dataset == 'cifar10':
         num_classes = 10
         train_dataset = datasets.CIFAR10(root=cifar10_data_dir,
@@ -487,7 +500,12 @@ def get_dataset(config):
                                         train=False,
                                         download=True,
                                         transform=transform_test)
-
+    elif config.dataset == "vww":
+        num_classes = 2
+        train_dataset = pyvww.pytorch.VisualWakeWordsClassification(root="/home/qhy/data/coco2017/all2017", 
+                            annFile="/home/qhy/data/coco2017/annotations/vww/instances_train.json",transform=transform_train)
+        val_dataset = pyvww.pytorch.VisualWakeWordsClassification(root="/home/qhy/data/coco2017/all2017", 
+                            annFile="/home/qhy/data/coco2017/annotations/vww/instances_val.json",transform=transform_train)
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=config.train.batch_size,
@@ -495,12 +513,13 @@ def get_dataset(config):
         num_workers=config.train.workers,
         pin_memory=True,
         sampler=None)
-    val_loader = torch.utils.data.DataLoader(val_dataset,
-                                                batch_size=config.val.batch_size,
-                                                shuffle=False,
-                                                num_workers=config.val.workers,
-                                                pin_memory=True,
-                                                sampler=None)
+    val_loader = torch.utils.data.DataLoader(
+        val_dataset,
+        batch_size=config.val.batch_size,
+        shuffle=False,
+        num_workers=config.val.workers,
+        pin_memory=True,
+        sampler=None)
     return train_loader,val_loader,num_classes
 
 
