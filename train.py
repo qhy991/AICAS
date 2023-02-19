@@ -50,6 +50,7 @@ def main(config, dataset):
     writer = SummaryWriter(log_dir=os.path.join(config.output.dir,
                                                 'runs/result'),
                            flush_secs=30)
+    print(config.output.name)
     logger = create_logger(config.output.dir, config.output.name)
     train_loader,val_loader,num_classes = get_dataset(config)
 

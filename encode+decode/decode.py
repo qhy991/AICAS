@@ -1,9 +1,17 @@
 import os
 import sys
-sys.path.append("..")
+sys.path.append("/home/qhy/Reserach/AICAS")
 from thop import profile 
 from models import model as M
-from utils import repvgg_model_convert
+import copy
+# from utils import repvgg_model_convert
+def repvgg_model_convert(model, do_copy=True):
+    if do_copy:
+        deploy_model = copy.deepcopy(model)
+    for module in deploy_model.modules():
+        if hasattr(module, 'switch_to_deploy'):
+            module.switch_to_deploy()
+    return deploy_model
 import yaml
 import torch
 def save_dict_to_yaml(dict_value: dict, save_path: str):
@@ -40,11 +48,18 @@ def decode(vars,dataset,n=0,save=True,constrain="acc"):
     config['val'] = {"batch_size":128,"workers":4} 
     config['output'] = {"print_freq":100,"epoch_print_freq":1,"save_freq":20,
                     "dir": os.path.join("./log/search-best",dir), "name": str(n)}
-    save_path = os.path.join("../config/search-best",dir+'.yaml')
+    if dataset == 'cifar10':
+        save_path = os.path.join("../config/search-best",dir+'.yaml')
+        classes = 10
+        f = open("/home/qhy/Reserach/AICAS/best-search.md",'a')
+    elif dataset == 'cifar100':
+        save_path = os.path.join("../config/search-best-cifar100",dir+'.yaml')
+        classes = 100
+        f = open("/home/qhy/Reserach/AICAS/best-search-cifar100.md",'a')
     
-    model = M.Net(config, 10)
+    model = M.Net(config, classes)
     # print(model)
-    model = repvgg_model_convert(model)
+    # model = repvgg_model_convert(model)
     input = torch.randn(1, 3, 32, 32)
     flops,params = profile(model, inputs=(input, ))
     md_fmt = "|"+ str(n)+'|' + str(stage_layer[0]) + '-' + str(stage_layer[1]) + '-' + str(stage_layer[2]) + '-' + str(stage_layer[3]) + '-' + str(stage_layer[4]) + '|'\
@@ -54,7 +69,8 @@ def decode(vars,dataset,n=0,save=True,constrain="acc"):
                 str(pool[0]) + '-' + str(pool[1]) + '-' + str(pool[2]) + '-' + str(pool[3]) + '-' + str(pool[4]) + '-' + str(pool[5]) + '|' + dataset+ "|" + str(round(flops/1e6,2))+"|"+str(round(params/1e6,2))+"|"+"|"+constrain+"|"
     if save:
         save_dict_to_yaml(config,save_path)
-    print(md_fmt)
+    print(md_fmt,file=f)
+    return config,save_path
 
 def decode_lite(vars,dataset):
     mapping_op = {0:'repvgg',1:'vgg'}

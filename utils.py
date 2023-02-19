@@ -305,7 +305,10 @@ def train_one_epoch(config, model, criterion, train_loader, optimizer, epoch,
             grad_norm = get_grad_norm(model.parameters())
 
         optimizer.step()
-        lr_scheduler.step_update(epoch * num_steps + idx)
+        try:
+            lr_scheduler.step_update(epoch * num_steps + idx)
+        except:
+            lr_scheduler.step()
 
         batch_time.update(time.time() - end)
         loss_meter.update(loss.item(), labels.size(0))
@@ -473,11 +476,22 @@ def get_dataset(config):
         transform_train = transforms.Compose([
             # transforms.RandomCrop(36, padding=4),
             # transforms.CenterCrop(32),
-            transforms.Resize((56,56)),
+            transforms.Resize((64,64)),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            # transforms.Normalize(mean, std)
+            transforms.Normalize(mean, std)
         ])
+    elif config.dataset == "mask":
+        mean = [0.5364829, 0.47852907, 0.45479727]
+        std = [0.28900605, 0.28060046, 0.28859267]
+        resolution = config.model.resolution
+        transform_train = transforms.Compose([
+            transforms.Resize((resolution,resolution)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
+        num_classes = 2
         
         
     if config.dataset == 'cifar10':
@@ -502,10 +516,18 @@ def get_dataset(config):
                                         transform=transform_test)
     elif config.dataset == "vww":
         num_classes = 2
+        # train_dataset = datasets.ImageFolder("/home/qhy/data/vww/train",transform=transform_train)
+        # val_dataset = datasets.ImageFolder("/home/qhy/data/vww/val",transform=transform_train)
+        
         train_dataset = pyvww.pytorch.VisualWakeWordsClassification(root="/home/qhy/data/coco2017/all2017", 
                             annFile="/home/qhy/data/coco2017/annotations/vww/instances_train.json",transform=transform_train)
         val_dataset = pyvww.pytorch.VisualWakeWordsClassification(root="/home/qhy/data/coco2017/all2017", 
                             annFile="/home/qhy/data/coco2017/annotations/vww/instances_val.json",transform=transform_train)
+    elif config.dataset == "mask":
+        num_classes = 2
+        train_dataset = datasets.ImageFolder("/home/qhy/data/Face Mask Dataset/Train",transform=transform_train)
+        val_dataset = datasets.ImageFolder("/home/qhy/data/Face Mask Dataset/Test",transform=transform_train) 
+
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=config.train.batch_size,

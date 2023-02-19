@@ -4,10 +4,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as checkpoint
-
-from .RepVGGBlock import RepVGGBlock
-
-
+try :
+    from .RepVGGBlock import RepVGGBlock
+except:
+    from RepVGGBlock import RepVGGBlock
+    
 def VGGBlock(in_channels,
              out_channels,
              kernel_size,
